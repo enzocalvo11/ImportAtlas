@@ -48,7 +48,7 @@ ESQUEMA_AGENDAMENTO = {
     "inicio": str,
     "fim": str,
     "status": str,
-    "confirmado_em": str,
+    "confirmado_em": (str, type(None)),
 }
 
 CAMPOS_RESPONSAVEIS = {
@@ -120,7 +120,7 @@ def salvar_estado_agendamento(
     agendamentos: list[dict[str, Any]],
     diretorio_dados: Path = DIRETORIO_DADOS,
 ) -> None:
-    """Valida e salva os arquivos alterados após uma confirmação."""
+    """Valida e salva os arquivos alterados durante o agendamento."""
     _validar_registros(
         operacoes,
         ESQUEMA_OPERACAO,
@@ -165,7 +165,7 @@ def salvar_estado_agendamento(
 
 def _carregar_colecao(
     caminho: Path,
-    esquema: dict[str, type],
+    esquema: dict[str, type | tuple[type, ...]],
     campos_data: tuple[str, ...],
 ) -> list[dict[str, Any]]:
     try:
@@ -185,7 +185,7 @@ def _carregar_colecao(
 
 def _validar_registros(
     registros: list[Any],
-    esquema: dict[str, type],
+    esquema: dict[str, type | tuple[type, ...]],
     campos_data: tuple[str, ...],
     nome_arquivo: str,
 ) -> None:
@@ -225,7 +225,8 @@ def _validar_registros(
         identificadores.add(identificador)
 
         for campo in campos_data:
-            _converter_data(registro[campo], campo, identificador, nome_arquivo)
+            if registro[campo] is not None:
+                _converter_data(registro[campo], campo, identificador, nome_arquivo)
 
 
 def _validar_intervalos(

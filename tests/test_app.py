@@ -48,16 +48,29 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("Café Atlântico Ltda.", conteudo)
         self.assertIn("Condições registradas", conteudo)
 
-    def test_assistente_exibe_recomendacao_e_resumo_para_confirmacao(self) -> None:
-        resposta = self.client.get("/operacoes/OP-001/assistente")
+    def test_assistente_exibe_recomendacao_e_resumo_para_solicitacao(self) -> None:
+        resposta = self.client.get(
+            "/operacoes/OP-001/assistente?opcao=JT-001--TR-001"
+        )
         conteudo = resposta.get_data(as_text=True)
 
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Verificação de prontidão", conteudo)
         self.assertIn("Horários compatíveis", conteudo)
         self.assertIn("22/09/2026 às 14:00", conteudo)
+<<<<<<< Updated upstream
         self.assertIn("Resumo para confirmação", conteudo)
         self.assertIn("Confirmar agendamento", conteudo)
+=======
+        self.assertIn("Resumo da solicitação", conteudo)
+        self.assertIn("Solicitar agendamento", conteudo)
+        self.assertIn("ainda precisará confirmar", conteudo)
+        self.assertIn("data-assistente-agendamento", conteudo)
+        self.assertIn('data-resumo-horario="inicio"', conteudo)
+        self.assertIn('data-campo-horario="transporte_id"', conteudo)
+        self.assertIn("Voltar ao painel", conteudo)
+        self.assertNotIn("Voltar aos detalhes", conteudo)
+>>>>>>> Stashed changes
 
     def test_assistente_permite_selecionar_alternativa(self) -> None:
         resposta = self.client.get(
@@ -76,7 +89,7 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Pendências impeditivas", conteudo)
         self.assertIn("Documentação incompleta", conteudo)
-        self.assertNotIn("Confirmar agendamento", conteudo)
+        self.assertNotIn("Solicitar agendamento", conteudo)
 
     def test_assistente_exibe_resultado_sem_compatibilidade(self) -> None:
         resposta = self.client.get("/operacoes/OP-003/assistente")
@@ -84,7 +97,7 @@ class PaginaInicialTestCase(unittest.TestCase):
 
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Nenhum horário compatível", conteudo)
-        self.assertNotIn("Confirmar agendamento", conteudo)
+        self.assertNotIn("Solicitar agendamento", conteudo)
 
     def test_assistente_rejeita_opcao_desconhecida(self) -> None:
         resposta = self.client.get(
@@ -93,7 +106,7 @@ class PaginaInicialTestCase(unittest.TestCase):
 
         self.assertEqual(resposta.status_code, 400)
 
-    def test_confirma_agendamento_e_exibe_resultado(self) -> None:
+    def test_solicita_e_depois_simula_confirmacao_do_terminal(self) -> None:
         resposta = self.client.post(
             "/operacoes/OP-001/confirmar",
             data={
@@ -105,19 +118,91 @@ class PaginaInicialTestCase(unittest.TestCase):
         conteudo = resposta.get_data(as_text=True)
 
         self.assertEqual(resposta.status_code, 200)
-        self.assertIn("Agendamento confirmado", conteudo)
+        self.assertIn("Aguardando confirmação do terminal", conteudo)
         self.assertIn("AG-001", conteudo)
-        self.assertIn("Comunicação simulada", conteudo)
-        self.assertIn("mensagem não enviada", conteudo)
+        self.assertIn("Resposta do terminal", conteudo)
+        self.assertIn("Confirmação pendente", conteudo)
+        self.assertIn("Confirmar horário", conteudo)
+        self.assertIn("Recusar horário", conteudo)
+        self.assertEqual(resposta.request.path, "/agendamentos/AG-001")
 
         painel = self.client.get("/").get_data(as_text=True)
-        self.assertIn("Agendamento confirmado", painel)
-        self.assertIn("Ver agendamento", painel)
+        self.assertIn("Aguardando confirmação do terminal", painel)
+        self.assertIn("Acompanhar solicitação", painel)
 
         detalhes = self.client.get("/operacoes/OP-001").get_data(as_text=True)
+        self.assertIn("Aguardando confirmação do terminal", detalhes)
         self.assertIn("Registro AG-001", detalhes)
 
-    def test_rejeita_confirmacao_repetida(self) -> None:
+        confirmacao = self.client.post(
+            "/agendamentos/AG-001/confirmar",
+            follow_redirects=True,
+        )
+        conteudo_confirmado = confirmacao.get_data(as_text=True)
+
+        self.assertEqual(confirmacao.status_code, 200)
+        self.assertIn("Agendamento confirmado", conteudo_confirmado)
+        self.assertIn("Horário confirmado", conteudo_confirmado)
+        self.assertIn("painel e o histórico", conteudo_confirmado)
+        self.assertIn("Participantes que seriam comunicados", conteudo_confirmado)
+        self.assertEqual(confirmacao.request.path, "/agendamentos/AG-001")
+
+        painel_confirmado = self.client.get("/").get_data(as_text=True)
+        self.assertIn("Agendamento confirmado", painel_confirmado)
+        self.assertIn("Ver agendamento", painel_confirmado)
+
+    def test_simula_resposta_negativa_na_mesma_pagina(self) -> None:
+        self.client.post(
+            "/operacoes/OP-001/confirmar",
+            data={
+                "janela_terminal_id": "JT-001",
+                "transporte_id": "TR-001",
+            },
+        )
+
+        resposta = self.client.post(
+            "/agendamentos/AG-001/recusar",
+            follow_redirects=True,
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.request.path, "/agendamentos/AG-001")
+        self.assertIn("Agendamento recusado pelo terminal", conteudo)
+        self.assertIn("Horário recusado", conteudo)
+        self.assertIn("janela e o transporte reservados foram liberados", conteudo)
+        self.assertNotIn("Confirmar horário", conteudo)
+        self.assertNotIn("Recusar horário", conteudo)
+
+        painel = self.client.get("/").get_data(as_text=True)
+        self.assertIn("Agendamento recusado pelo terminal", painel)
+        self.assertIn("Ver resposta do terminal", painel)
+
+        detalhes = self.client.get("/operacoes/OP-001").get_data(as_text=True)
+        self.assertIn("Agendamento recusado pelo terminal", detalhes)
+        self.assertIn("Ver resposta do terminal", detalhes)
+
+    def test_assistente_recarrega_solicitacao_pendente(self) -> None:
+        self.client.post(
+            "/operacoes/OP-001/confirmar",
+            data={
+                "janela_terminal_id": "JT-001",
+                "transporte_id": "TR-001",
+            },
+        )
+
+        resposta = self.client.get(
+            "/operacoes/OP-001/assistente",
+            follow_redirects=True,
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn(
+            "Aguardando confirmação do terminal",
+            resposta.get_data(as_text=True),
+        )
+
+    def test_rejeita_solicitacao_repetida(self) -> None:
         dados = {
             "janela_terminal_id": "JT-001",
             "transporte_id": "TR-001",
@@ -152,9 +237,10 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Demonstração restaurada", conteudo)
         self.assertNotIn("Ver agendamento", conteudo)
+        self.assertNotIn("Acompanhar solicitação", conteudo)
 
         assistente = self.client.get(
-            "/operacoes/OP-001/assistente"
+            "/operacoes/OP-001/assistente?opcao=JT-001--TR-001"
         ).get_data(as_text=True)
         self.assertIn('method="post"', assistente)
 

@@ -29,7 +29,7 @@ class AgendamentoServiceTestCase(unittest.TestCase):
             self.transportes,
         )
 
-        self.assertEqual(resultado["status"], "Aguardando confirmação")
+        self.assertEqual(resultado["status"], "Pronta para agendamento")
         self.assertEqual(resultado["total_opcoes"], 3)
         self.assertEqual(
             resultado["recomendacao"]["janela_terminal_id"],

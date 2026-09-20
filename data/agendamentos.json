@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "AG-001",
+    "operacao_id": "OP-001",
+    "janela_terminal_id": "JT-001",
+    "transporte_id": "TR-001",
+    "inicio": "2026-09-22T14:00:00-03:00",
+    "fim": "2026-09-22T15:00:00-03:00",
+    "status": "Agendamento recusado pelo terminal",
+    "confirmado_em": null
+  }
+]

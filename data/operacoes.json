@@ -18,7 +18,7 @@
       "bloqueio": "Equipe operacional",
       "transporte": "Transportadora Rota Sul"
     },
-    "status": "Pronta para agendamento"
+    "status": "Agendamento recusado pelo terminal"
   },
   {
     "id": "OP-002",

@@ -14,7 +14,9 @@ from services.data_service import (
 )
 
 
+STATUS_AGUARDANDO_TERMINAL = "Aguardando confirmação do terminal"
 STATUS_CONFIRMADO = "Agendamento confirmado"
+STATUS_RECUSADO = "Agendamento recusado pelo terminal"
 _TRAVA_CONFIRMACAO = Lock()
 
 
@@ -22,14 +24,14 @@ class ErroConfirmacao(ValueError):
     """Indica que o agendamento não pode ser confirmado com segurança."""
 
 
-def confirmar_agendamento(
+def solicitar_agendamento(
     operacao_id: str,
     janela_terminal_id: str,
     transporte_id: str,
     diretorio_dados: Path = DIRETORIO_DADOS,
 ) -> dict[str, Any]:
     with _TRAVA_CONFIRMACAO:
-        return _confirmar_agendamento(
+        return _solicitar_agendamento(
             operacao_id,
             janela_terminal_id,
             transporte_id,
@@ -37,7 +39,7 @@ def confirmar_agendamento(
         )
 
 
-def _confirmar_agendamento(
+def _solicitar_agendamento(
     operacao_id: str,
     janela_terminal_id: str,
     transporte_id: str,
@@ -51,8 +53,10 @@ def _confirmar_agendamento(
     operacao = _buscar_por_id(operacoes, operacao_id)
     if operacao is None:
         raise ErroConfirmacao(f"A operação {operacao_id} não existe.")
-    if operacao["status"] == STATUS_CONFIRMADO:
-        raise ErroConfirmacao("Esta operação já possui agendamento confirmado.")
+    if any(item["operacao_id"] == operacao_id for item in agendamentos):
+        raise ErroConfirmacao(
+            "Esta operação já possui uma solicitação de agendamento."
+        )
 
     resultado = buscar_horarios_compativeis(operacao, janelas, transportes)
     if resultado["pendencias"]:
@@ -80,7 +84,7 @@ def _confirmar_agendamento(
     )
     if opcao is None:
         raise ErroConfirmacao(
-            "O horário selecionado não está mais disponível para confirmação."
+            "O horário selecionado não está mais disponível para solicitação."
         )
 
     janela = _buscar_por_id(janelas, janela_terminal_id)
@@ -95,11 +99,11 @@ def _confirmar_agendamento(
         "transporte_id": transporte_id,
         "inicio": opcao["inicio"],
         "fim": opcao["fim"],
-        "status": STATUS_CONFIRMADO,
-        "confirmado_em": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "status": STATUS_AGUARDANDO_TERMINAL,
+        "confirmado_em": None,
     }
 
-    operacao["status"] = STATUS_CONFIRMADO
+    operacao["status"] = STATUS_AGUARDANDO_TERMINAL
     janela["disponivel"] = False
     transporte["disponivel"] = False
     agendamentos.append(agendamento)
@@ -125,6 +129,74 @@ def _confirmar_agendamento(
             for participante in participantes
         ],
     }
+
+
+def confirmar_agendamento(
+    agendamento_id: str,
+    diretorio_dados: Path = DIRETORIO_DADOS,
+) -> dict[str, Any]:
+    """Simula a resposta positiva do terminal para uma solicitação existente."""
+    return _responder_agendamento(agendamento_id, True, diretorio_dados)
+
+
+def recusar_agendamento(
+    agendamento_id: str,
+    diretorio_dados: Path = DIRETORIO_DADOS,
+) -> dict[str, Any]:
+    """Simula a resposta negativa do terminal para uma solicitação existente."""
+    return _responder_agendamento(agendamento_id, False, diretorio_dados)
+
+
+def _responder_agendamento(
+    agendamento_id: str,
+    confirmado: bool,
+    diretorio_dados: Path,
+) -> dict[str, Any]:
+    with _TRAVA_CONFIRMACAO:
+        operacoes = carregar_operacoes(diretorio_dados)
+        janelas = carregar_janelas_terminal(diretorio_dados)
+        transportes = carregar_disponibilidades_transporte(diretorio_dados)
+        agendamentos = carregar_agendamentos(diretorio_dados)
+
+        agendamento = _buscar_por_id(agendamentos, agendamento_id)
+        if agendamento is None:
+            raise ErroConfirmacao(f"O agendamento {agendamento_id} não existe.")
+        if agendamento["status"] != STATUS_AGUARDANDO_TERMINAL:
+            raise ErroConfirmacao(
+                "Esta solicitação já recebeu uma resposta do terminal."
+            )
+
+        operacao = _buscar_por_id(operacoes, agendamento["operacao_id"])
+        if operacao is None:
+            raise ErroConfirmacao("A operação da solicitação não foi encontrada.")
+
+        novo_status = STATUS_CONFIRMADO if confirmado else STATUS_RECUSADO
+        agendamento["status"] = novo_status
+        agendamento["confirmado_em"] = (
+            datetime.now().astimezone().isoformat(timespec="seconds")
+            if confirmado
+            else None
+        )
+        operacao["status"] = novo_status
+
+        if not confirmado:
+            janela = _buscar_por_id(janelas, agendamento["janela_terminal_id"])
+            transporte = _buscar_por_id(transportes, agendamento["transporte_id"])
+            if janela is None or transporte is None:
+                raise ErroConfirmacao(
+                    "Os recursos reservados para a solicitação não foram encontrados."
+                )
+            janela["disponivel"] = True
+            transporte["disponivel"] = True
+
+        salvar_estado_agendamento(
+            operacoes,
+            janelas,
+            transportes,
+            agendamentos,
+            diretorio_dados,
+        )
+        return {"operacao": operacao, "agendamento": agendamento}
 
 
 def _buscar_por_id(

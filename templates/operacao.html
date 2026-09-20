@@ -67,7 +67,7 @@
           <li>
             <span class="marcador-linha-tempo" aria-hidden="true"></span>
             <div>
-              <strong>Agendamento confirmado</strong>
+              <strong>{{ agendamento.status }}</strong>
               <p>{{ agendamento.inicio|data_br }} · Registro {{ agendamento.id }}</p>
             </div>
           </li>
@@ -83,7 +83,9 @@
   <div class="barra-acoes">
     <a class="botao botao-secundario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
     {% if agendamento %}
-      <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamento.id) }}">Ver agendamento confirmado</a>
+      <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamento.id) }}">
+        {{ "Ver agendamento confirmado" if agendamento.status == "Agendamento confirmado" else "Ver resposta do terminal" if agendamento.status == "Agendamento recusado pelo terminal" else "Acompanhar solicitação" }}
+      </a>
     {% else %}
       <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">Verificar e agendar retirada</a>
     {% endif %}
