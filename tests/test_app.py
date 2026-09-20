@@ -65,7 +65,7 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("Documentação concluída", conteudo)
         self.assertIn("item-pendente", conteudo)
 
-    def test_assistente_exibe_recomendacao_e_resumo_para_confirmacao(self) -> None:
+    def test_assistente_nao_pre_seleciona_nenhuma_opcao(self) -> None:
         resposta = self.client.get("/operacoes/OP-001/assistente")
         conteudo = resposta.get_data(as_text=True)
 
@@ -73,6 +73,17 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("Verificação de prontidão", conteudo)
         self.assertIn("Horários compatíveis", conteudo)
         self.assertIn("22/09/2026 às 14:00", conteudo)
+        self.assertIn("Escolha um horário para continuar", conteudo)
+        self.assertNotIn("Resumo para confirmação", conteudo)
+        self.assertNotIn("Confirmar agendamento", conteudo)
+
+    def test_assistente_exibe_resumo_apos_selecionar_horario(self) -> None:
+        resposta = self.client.get(
+            "/operacoes/OP-001/assistente?opcao=JT-001--TR-001"
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
         self.assertIn("Resumo para confirmação", conteudo)
         self.assertIn("Confirmar agendamento", conteudo)
         self.assertIn("data-assistente-agendamento", conteudo)
@@ -99,6 +110,40 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("Pendências impeditivas", conteudo)
         self.assertIn("Documentação incompleta", conteudo)
         self.assertNotIn("Confirmar agendamento", conteudo)
+
+    def test_simular_atualizacao_resolve_pendencias_existentes(self) -> None:
+        resposta = self.client.post(
+            "/operacoes/OP-002/simular-atualizacao",
+            follow_redirects=True,
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Tudo concluído", conteudo)
+        self.assertIn("Horários compatíveis", conteudo)
+        self.assertNotIn("Simular atualização", conteudo)
+
+        painel = self.client.get("/").get_data(as_text=True)
+        cartao_op_002 = painel.split("OP-002", 1)[1].split("OP-003", 1)[0]
+        self.assertIn("Pronta para agendamento", cartao_op_002)
+        self.assertNotIn("Com pendências", cartao_op_002)
+
+    def test_botao_simular_atualizacao_some_quando_ja_esta_tudo_concluido(
+        self,
+    ) -> None:
+        resposta = self.client.get("/operacoes/OP-001/assistente")
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Tudo concluído", conteudo)
+        self.assertNotIn("Simular atualização", conteudo)
+
+    def test_botao_simular_atualizacao_aparece_quando_ha_pendencia(self) -> None:
+        resposta = self.client.get("/operacoes/OP-002/assistente")
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Simular atualização", conteudo)
 
     def test_assistente_exibe_resultado_sem_compatibilidade(self) -> None:
         resposta = self.client.get("/operacoes/OP-003/assistente")
@@ -176,7 +221,7 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertNotIn("Ver agendamento", conteudo)
 
         assistente = self.client.get(
-            "/operacoes/OP-001/assistente"
+            "/operacoes/OP-001/assistente?opcao=JT-001--TR-001"
         ).get_data(as_text=True)
         self.assertIn('method="post"', assistente)
 

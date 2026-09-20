@@ -148,6 +148,14 @@ h3 {
   flex: 0 0 auto;
 }
 
+.cabecalho-detalhes-acoes {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
 .aviso-painel {
   margin: -0.75rem 0 2rem;
 }
@@ -987,8 +995,13 @@ a:focus-visible {
   }
 
   .cabecalho-pagina > form,
-  .cabecalho-pagina > form .botao {
+  .cabecalho-pagina > form .botao,
+  .cabecalho-detalhes-acoes {
     width: 100%;
+  }
+
+  .cabecalho-detalhes-acoes {
+    align-items: stretch;
   }
 
   .indicadores,

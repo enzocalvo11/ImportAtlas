@@ -19,6 +19,7 @@ from services.demonstracao_service import (
     DIRETORIO_BASE_DEMO,
     restaurar_dados_demonstracao,
 )
+from services.simulacao_service import ErroSimulacao, simular_atualizacao_prontidao
 from services.prontidao_service import verificar_prontidao
 
 
@@ -27,7 +28,6 @@ CLASSES_STATUS = {
     "Com pendências": "status-erro",
     "Pronta para agendamento": "status-alerta",
     "Sem horário compatível": "status-alerta",
-    "Aguardando confirmação": "status-informativo",
     "Agendamento confirmado": "status-sucesso",
 }
 
@@ -110,6 +110,19 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             opcoes=opcoes,
             opcao_selecionada=opcao_selecionada,
             participantes=participantes,
+        )
+
+    @app.post("/operacoes/<operacao_id>/simular-atualizacao")
+    def simular_atualizacao(operacao_id: str) -> Any:
+        try:
+            simular_atualizacao_prontidao(operacao_id, _diretorio_dados(app))
+        except ErroSimulacao as erro:
+            abort(404, description=str(erro))
+
+        session.pop(_chave_sessao_selecao(operacao_id), None)
+        return redirect(
+            url_for("iniciar_assistente", operacao_id=operacao_id),
+            code=303,
         )
 
     @app.post("/operacoes/<operacao_id>/confirmar")
