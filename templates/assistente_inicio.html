@@ -19,7 +19,14 @@
         {{ operacao.container }} · {{ operacao.terminal }} · {{ operacao.importador }}
       </p>
     </div>
-    <span class="status {{ resultado.status|classe_status }}">{{ resultado.status }}</span>
+    <div class="cabecalho-detalhes-acoes">
+      {% if resultado.pendencias %}
+        <form method="post" action="{{ url_for('simular_atualizacao', operacao_id=operacao.id) }}">
+          <button class="botao botao-secundario" type="submit">Simular atualização</button>
+        </form>
+      {% endif %}
+      <span class="status {{ resultado.status|classe_status }}">{{ resultado.status }}</span>
+    </div>
   </section>
 
   <section class="painel secao-assistente" aria-labelledby="titulo-prontidao">

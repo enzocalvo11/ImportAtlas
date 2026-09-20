@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Any
 
-from services.prontidao_service import verificar_prontidao
+from services.prontidao_service import STATUS_PRONTA, verificar_prontidao
 
 
 STATUS_SEM_HORARIO = "Sem horário compatível"
-STATUS_AGUARDANDO_CONFIRMACAO = "Aguardando confirmação"
 STATUS_CONFIRMADO = "Agendamento confirmado"
 DURACAO_PADRAO_MINUTOS = 60
 
@@ -69,7 +68,7 @@ def buscar_horarios_compativeis(
 
     return {
         "operacao_id": operacao["id"],
-        "status": STATUS_AGUARDANDO_CONFIRMACAO,
+        "status": STATUS_PRONTA,
         "mensagem": (
             "A recomendação é a primeira compatibilidade disponível entre "
             "o terminal e o transporte."
