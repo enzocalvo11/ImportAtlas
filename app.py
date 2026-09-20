@@ -20,6 +20,7 @@ from services.demonstracao_service import (
     restaurar_dados_demonstracao,
 )
 from services.simulacao_service import ErroSimulacao, simular_atualizacao_prontidao
+from services.prontidao_service import verificar_prontidao
 
 
 CLASSES_STATUS = {
@@ -87,6 +88,7 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             "operacao.html",
             operacao=operacao,
             agendamento=agendamento,
+            prontidao=verificar_prontidao(operacao),
         )
 
     @app.get("/operacoes/<operacao_id>/assistente")
