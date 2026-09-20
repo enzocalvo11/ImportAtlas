@@ -65,6 +65,11 @@
 
       <div class="barra-acoes acoes-terminal">
         <a class="botao botao-secundario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
+        {% if recusado %}
+          <form method="post" action="{{ url_for('iniciar_reagendamento', agendamento_id=agendamento.id) }}">
+            <button class="botao botao-primario" type="submit">Tentar novo horário</button>
+          </form>
+        {% endif %}
       </div>
     </section>
   </section>

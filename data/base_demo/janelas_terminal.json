@@ -33,5 +33,19 @@
     "inicio": "2026-09-24T08:00:00-03:00",
     "fim": "2026-09-24T09:00:00-03:00",
     "disponivel": true
+  },
+  {
+    "id": "JT-006",
+    "terminal": "Ecoporto Santos",
+    "inicio": "2026-09-23T16:00:00-03:00",
+    "fim": "2026-09-23T18:00:00-03:00",
+    "disponivel": true
+  },
+  {
+    "id": "JT-007",
+    "terminal": "BTP",
+    "inicio": "2026-09-24T10:00:00-03:00",
+    "fim": "2026-09-24T12:00:00-03:00",
+    "disponivel": true
   }
 ]

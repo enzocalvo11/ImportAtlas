@@ -12,6 +12,7 @@ from services.data_service import (
     carregar_operacoes,
     salvar_estado_agendamento,
 )
+from services.prontidao_service import STATUS_PRONTA, verificar_prontidao
 
 
 STATUS_AGUARDANDO_TERMINAL = "Aguardando confirmação do terminal"
@@ -53,7 +54,11 @@ def _solicitar_agendamento(
     operacao = _buscar_por_id(operacoes, operacao_id)
     if operacao is None:
         raise ErroConfirmacao(f"A operação {operacao_id} não existe.")
-    if any(item["operacao_id"] == operacao_id for item in agendamentos):
+    if any(
+        item["operacao_id"] == operacao_id
+        and item["status"] != STATUS_RECUSADO
+        for item in agendamentos
+    ):
         raise ErroConfirmacao(
             "Esta operação já possui uma solicitação de agendamento."
         )
@@ -145,6 +150,52 @@ def recusar_agendamento(
 ) -> dict[str, Any]:
     """Simula a resposta negativa do terminal para uma solicitação existente."""
     return _responder_agendamento(agendamento_id, False, diretorio_dados)
+
+
+def preparar_reagendamento(
+    agendamento_id: str,
+    diretorio_dados: Path = DIRETORIO_DADOS,
+) -> dict[str, Any]:
+    """Libera uma operação recusada para uma nova escolha de horário."""
+    with _TRAVA_CONFIRMACAO:
+        operacoes = carregar_operacoes(diretorio_dados)
+        janelas = carregar_janelas_terminal(diretorio_dados)
+        transportes = carregar_disponibilidades_transporte(diretorio_dados)
+        agendamentos = carregar_agendamentos(diretorio_dados)
+
+        agendamento = _buscar_por_id(agendamentos, agendamento_id)
+        if agendamento is None:
+            raise ErroConfirmacao(f"O agendamento {agendamento_id} não existe.")
+        if agendamento["status"] != STATUS_RECUSADO:
+            raise ErroConfirmacao(
+                "Somente uma solicitação recusada pode ser reagendada."
+            )
+
+        operacao = _buscar_por_id(operacoes, agendamento["operacao_id"])
+        if operacao is None:
+            raise ErroConfirmacao("A operação da solicitação não foi encontrada.")
+        if any(
+            item["operacao_id"] == operacao["id"]
+            and item["status"] != STATUS_RECUSADO
+            for item in agendamentos
+        ):
+            raise ErroConfirmacao(
+                "Esta operação já possui outra solicitação de agendamento."
+            )
+        if not verificar_prontidao(operacao)["pronta"]:
+            raise ErroConfirmacao(
+                "A operação possui pendências impeditivas e não pode ser reagendada."
+            )
+
+        operacao["status"] = STATUS_PRONTA
+        salvar_estado_agendamento(
+            operacoes,
+            janelas,
+            transportes,
+            agendamentos,
+            diretorio_dados,
+        )
+        return {"operacao": operacao, "agendamento": agendamento}
 
 
 def _responder_agendamento(

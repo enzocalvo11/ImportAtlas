@@ -14,8 +14,12 @@ if (gradeHorarios) {
   const campoTransporte = document.querySelector(
     '[data-campo-horario="transporte_id"]',
   );
+  const avisoSelecao = document.querySelector("[data-aviso-selecao]");
+  const resumoConfirmacao = document.querySelector(
+    "[data-resumo-confirmacao]",
+  );
 
-  function selecionarHorario(cartao) {
+  function atualizarSelecao(cartao) {
     cartoes.forEach((item) => {
       const selecionado = item === cartao;
       const rotulo = item.querySelector("[data-rotulo-selecionado]");
@@ -24,7 +28,7 @@ if (gradeHorarios) {
       item.classList.toggle("cartao-selecionado", selecionado);
       rotulo.hidden = !selecionado;
       seletor.textContent = selecionado
-        ? "Horário selecionado"
+        ? "Desmarcar horário"
         : "Selecionar este horário";
 
       if (selecionado) {
@@ -34,6 +38,21 @@ if (gradeHorarios) {
       }
     });
 
+    avisoSelecao.hidden = Boolean(cartao);
+    resumoConfirmacao.hidden = !cartao;
+
+    const url = new URL(window.location.href);
+    if (!cartao) {
+      Object.values(camposResumo).forEach((campo) => {
+        campo.textContent = "";
+      });
+      campoJanela.value = "";
+      campoTransporte.value = "";
+      url.searchParams.set("opcao", "");
+      window.history.replaceState({}, "", url);
+      return;
+    }
+
     camposResumo.terminal.textContent = cartao.dataset.terminal;
     camposResumo.inicio.textContent = cartao.dataset.inicioFormatado;
     camposResumo.transportadora.textContent = cartao.dataset.transportadora;
@@ -41,7 +60,6 @@ if (gradeHorarios) {
     campoJanela.value = cartao.dataset.janelaTerminalId;
     campoTransporte.value = cartao.dataset.transporteId;
 
-    const url = new URL(window.location.href);
     url.searchParams.set("opcao", cartao.dataset.chave);
     window.history.replaceState({}, "", url);
   }
@@ -51,11 +69,19 @@ if (gradeHorarios) {
     if (!seletor) {
       return;
     }
-    if (!campoJanela || !campoTransporte) {
+    if (
+      !campoJanela ||
+      !campoTransporte ||
+      !avisoSelecao ||
+      !resumoConfirmacao
+    ) {
       return;
     }
 
     evento.preventDefault();
-    selecionarHorario(seletor.closest("[data-opcao-horario]"));
+    const cartao = seletor.closest("[data-opcao-horario]");
+    atualizarSelecao(
+      cartao.classList.contains("cartao-selecionado") ? null : cartao,
+    );
   });
 }

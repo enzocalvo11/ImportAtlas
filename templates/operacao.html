@@ -32,28 +32,28 @@
           <p class="etapa">Visão geral</p>
           <h2 id="titulo-dados-carga">Dados da carga</h2>
         </div>
-        <span class="resumo-verificacao resumo-sucesso">Dados completos</span>
+        <span class="resumo-verificacao resumo-neutro">Dados completos</span>
       </div>
       <dl class="grade-resumo grade-informacoes">
         <div class="{{ 'informacao-valida' if operacao.importador else 'informacao-invalida' }}">
           <dt>Importador</dt>
           <dd>{{ operacao.importador or "Não informado" }}</dd>
-          <small>{{ "Informação completa" if operacao.importador else "Informação incompleta" }}</small>
+          {% if not operacao.importador %}<small>Informação incompleta</small>{% endif %}
         </div>
         <div class="{{ 'informacao-valida' if operacao.container else 'informacao-invalida' }}">
           <dt>Contêiner</dt>
           <dd>{{ operacao.container or "Não informado" }}</dd>
-          <small>{{ "Informação completa" if operacao.container else "Informação incompleta" }}</small>
+          {% if not operacao.container %}<small>Informação incompleta</small>{% endif %}
         </div>
         <div class="{{ 'informacao-valida' if operacao.terminal else 'informacao-invalida' }}">
           <dt>Terminal</dt>
           <dd>{{ operacao.terminal or "Não informado" }}</dd>
-          <small>{{ "Informação completa" if operacao.terminal else "Informação incompleta" }}</small>
+          {% if not operacao.terminal %}<small>Informação incompleta</small>{% endif %}
         </div>
         <div class="{{ 'informacao-valida' if operacao.chegada_prevista else 'informacao-invalida' }}">
           <dt>Chegada prevista</dt>
           <dd>{{ operacao.chegada_prevista|data_br if operacao.chegada_prevista else "Não informada" }}</dd>
-          <small>{{ "Informação completa" if operacao.chegada_prevista else "Informação incompleta" }}</small>
+          {% if not operacao.chegada_prevista %}<small>Informação incompleta</small>{% endif %}
         </div>
       </dl>
     </section>
@@ -98,14 +98,14 @@
           <p class="etapa">Equipe envolvida</p>
           <h2 id="titulo-responsaveis">Responsáveis</h2>
         </div>
-        <span class="resumo-verificacao resumo-sucesso">Dados completos</span>
+        <span class="resumo-verificacao resumo-neutro">Dados completos</span>
       </div>
       <dl class="grade-resumo grade-informacoes grade-responsaveis">
         {% for papel, responsavel in operacao.responsaveis.items() %}
           <div class="{{ 'informacao-valida' if responsavel else 'informacao-invalida' }}">
             <dt>{{ papel|replace("_", " ")|capitalize }}</dt>
             <dd>{{ responsavel or "Não informado" }}</dd>
-            <small>{{ "Informação completa" if responsavel else "Informação incompleta" }}</small>
+            {% if not responsavel %}<small>Informação incompleta</small>{% endif %}
           </div>
         {% endfor %}
       </dl>
@@ -138,7 +138,7 @@
 
   <div class="barra-acoes">
     <a class="botao botao-secundario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
-    {% if agendamento %}
+    {% if agendamento and not (agendamento.status == "Agendamento recusado pelo terminal" and operacao.status == "Pronta para agendamento") %}
       <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamento.id) }}">
         {{ "Ver agendamento confirmado" if agendamento.status == "Agendamento confirmado" else "Ver resposta do terminal" if agendamento.status == "Agendamento recusado pelo terminal" else "Acompanhar solicitação" }}
       </a>

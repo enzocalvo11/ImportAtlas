@@ -19,7 +19,8 @@ class DadosSimuladosTestCase(unittest.TestCase):
 
         self.assertEqual(set(operacoes_por_id), {"OP-001", "OP-002", "OP-003"})
         self.assertTrue(operacoes_por_id["OP-001"]["documentacao_concluida"])
-        self.assertFalse(operacoes_por_id["OP-002"]["documentacao_concluida"])
+        self.assertTrue(operacoes_por_id["OP-002"]["documentacao_concluida"])
+        self.assertFalse(operacoes_por_id["OP-002"]["liberacao_terminal"])
         self.assertTrue(operacoes_por_id["OP-003"]["documentacao_concluida"])
 
     def test_carrega_disponibilidades_deterministicas(self) -> None:
@@ -28,8 +29,8 @@ class DadosSimuladosTestCase(unittest.TestCase):
             DIRETORIO_BASE_DEMO
         )
 
-        self.assertEqual(len(janelas), 5)
-        self.assertEqual(len(transportes), 5)
+        self.assertEqual(len(janelas), 7)
+        self.assertEqual(len(transportes), 7)
         self.assertEqual(janelas[0]["id"], "JT-001")
         self.assertEqual(transportes[0]["id"], "TR-001")
 

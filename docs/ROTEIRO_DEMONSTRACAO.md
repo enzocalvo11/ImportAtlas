@@ -24,18 +24,19 @@ Mensagem principal: o sistema cruza as disponibilidades, recomenda a primeira op
 ## Cenário B — Operação com pendência
 
 1. Na operação `OP-002`, clique em **Verificar e agendar**.
-2. Mostre a documentação pendente, o motivo, o responsável e a próxima ação.
+2. Mostre as despesas portuárias pendentes, o motivo, o responsável e a próxima ação.
 3. Destaque que nenhum horário e nenhum botão de solicitação são exibidos.
 
 Mensagem principal: uma carga com pendência impeditiva nunca pode ser agendada.
 
-## Cenário C — Sem compatibilidade
+## Cenário C — Operação pronta com duas opções
 
 1. Na operação `OP-003`, clique em **Verificar e agendar**.
 2. Mostre que a checklist está concluída.
-3. Destaque a mensagem de que terminal e transporte não possuem horários coincidentes.
+3. Destaque o primeiro horário recomendado e a alternativa disponível.
+4. Mostre que as duas opções resultam do cruzamento entre terminal e transporte.
 
-Mensagem principal: o sistema não cria disponibilidade nem inventa horários.
+Mensagem principal: o sistema organiza as disponibilidades existentes e recomenda a primeira compatibilidade encontrada.
 
 ## Encerramento
 

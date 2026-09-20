@@ -31,7 +31,7 @@ class SimulacaoServiceTestCase(unittest.TestCase):
         )
 
     def test_resolve_todas_as_pendencias_quando_existem(self) -> None:
-        # OP-002 nasce com uma pendência de documentação.
+        # OP-002 nasce com despesas portuárias pendentes.
         self.assertFalse(
             verificar_prontidao(self._buscar_operacao("OP-002"))["pronta"]
         )

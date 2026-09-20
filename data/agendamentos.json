@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "AG-001",
+    "operacao_id": "OP-001",
+    "janela_terminal_id": "JT-002",
+    "transporte_id": "TR-002",
+    "inicio": "2026-09-22T17:00:00-03:00",
+    "fim": "2026-09-22T18:00:00-03:00",
+    "status": "Agendamento confirmado",
+    "confirmado_em": "2026-09-20T06:07:31-03:00"
+  },
+  {
+    "id": "AG-002",
+    "operacao_id": "OP-002",
+    "janela_terminal_id": "JT-006",
+    "transporte_id": "TR-006",
+    "inicio": "2026-09-23T16:30:00-03:00",
+    "fim": "2026-09-23T17:30:00-03:00",
+    "status": "Agendamento recusado pelo terminal",
+    "confirmado_em": null
+  },
+  {
+    "id": "AG-003",
+    "operacao_id": "OP-002",
+    "janela_terminal_id": "JT-004",
+    "transporte_id": "TR-004",
+    "inicio": "2026-09-23T13:00:00-03:00",
+    "fim": "2026-09-23T14:00:00-03:00",
+    "status": "Agendamento confirmado",
+    "confirmado_em": "2026-09-20T06:07:51-03:00"
+  }
+]

@@ -10,6 +10,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -220,6 +224,11 @@ h3 {
   gap: 1rem;
 }
 
+.titulo-secao > div,
+.titulo-painel > div {
+  min-width: 0;
+}
+
 .titulo-secao {
   margin-bottom: 1.25rem;
 }
@@ -248,6 +257,22 @@ h3 {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.cartao-operacao-status-sucesso {
+  border-top: 4px solid #2b8a68;
+}
+
+.cartao-operacao-status-alerta {
+  border-top: 4px solid #d6a52e;
+}
+
+.cartao-operacao-status-informativo {
+  border-top: 4px solid #307aa5;
+}
+
+.cartao-operacao-status-erro {
+  border-top: 4px solid #cc5a5a;
 }
 
 .cartao-topo,
@@ -480,8 +505,10 @@ a:focus-visible {
 }
 
 .grade-informacoes > div {
-  border: 1px solid transparent;
-  border-left-width: 4px;
+  border: 1px solid #dce5ea;
+  border-left-width: 3px;
+  color: #426174;
+  background: #f7f9fa;
 }
 
 .grade-informacoes small {
@@ -492,14 +519,16 @@ a:focus-visible {
 }
 
 .grade-informacoes .informacao-valida {
-  border-color: #b9dfce;
-  color: #176347;
-  background: #eef9f4;
+  border-color: #dce5ea;
+  border-left-color: #7f9bad;
 }
 
-.grade-informacoes .informacao-valida dd,
+.grade-informacoes .informacao-valida dd {
+  color: #17384f;
+}
+
 .grade-informacoes .informacao-valida small {
-  color: #176347;
+  color: #607687;
 }
 
 .grade-informacoes .informacao-invalida {
@@ -650,6 +679,7 @@ a:focus-visible {
 }
 
 .resumo-verificacao,
+.resumo-neutro,
 .rotulo-recomendacao,
 .rotulo-alternativa,
 .rotulo-selecionado {
@@ -671,6 +701,11 @@ a:focus-visible {
   background: #fdecec;
 }
 
+.resumo-neutro {
+  color: #4b6270;
+  background: #eef2f4;
+}
+
 .checklist {
   display: grid;
   margin: 1rem 0 0;
@@ -680,7 +715,7 @@ a:focus-visible {
 
 .item-checklist {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
   padding-block: 0.85rem;
@@ -813,7 +848,6 @@ a:focus-visible {
   border-color: #b9dfce;
   color: #176347;
   background: #eef9f4;
-  cursor: default;
 }
 
 .cartao-horario-topo {
@@ -860,6 +894,7 @@ a:focus-visible {
 }
 
 .resumo-confirmacao {
+  margin-top: 1.5rem;
   border-top: 4px solid #307aa5;
 }
 
@@ -1083,6 +1118,10 @@ a:focus-visible {
   margin-top: 1.25rem;
 }
 
+.acoes-terminal form {
+  margin: 0;
+}
+
 .rodape {
   padding-block: 1.5rem;
   border-top: 1px solid #dce5ea;
@@ -1131,7 +1170,8 @@ a:focus-visible {
   .cabecalho-pagina,
   .cabecalho-detalhes,
   .cabecalho-terminal,
-  .titulo-secao {
+  .titulo-secao,
+  .titulo-painel {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -1169,6 +1209,15 @@ a:focus-visible {
 
   .dados-resumidos {
     grid-template-columns: 1fr;
+  }
+
+  .item-checklist {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .item-checklist strong {
+    grid-column: 2;
+    text-align: left;
   }
 
   .acoes-cartao,

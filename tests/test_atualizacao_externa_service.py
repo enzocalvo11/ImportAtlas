@@ -29,7 +29,7 @@ class AtualizacaoExternaServiceTestCase(unittest.TestCase):
 
         self.assertEqual(
             resultado["campos_atualizados"],
-            ["documentacao_concluida"],
+            ["liberacao_terminal"],
         )
         self.assertTrue(resultado["prontidao"]["pronta"])
         self.assertEqual(
@@ -41,7 +41,7 @@ class AtualizacaoExternaServiceTestCase(unittest.TestCase):
             operacao["id"]: operacao
             for operacao in carregar_operacoes(self.diretorio_dados)
         }
-        self.assertTrue(operacoes["OP-002"]["documentacao_concluida"])
+        self.assertTrue(operacoes["OP-002"]["liberacao_terminal"])
         self.assertEqual(
             operacoes["OP-002"]["status"],
             "Pronta para agendamento",

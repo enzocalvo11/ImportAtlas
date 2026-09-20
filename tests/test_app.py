@@ -53,10 +53,14 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("OP-001", conteudo)
         self.assertIn("OP-002", conteudo)
         self.assertIn("OP-003", conteudo)
-        self.assertIn('<span class="status status-alerta">', conteudo)
+        self.assertIn('<span class="status status-informativo">', conteudo)
         self.assertIn("Pronta para agendamento", conteudo)
         self.assertIn("Com pendências", conteudo)
+        self.assertIn('class="indicador indicador-informativo"', conteudo)
         self.assertIn('class="indicador indicador-alerta"', conteudo)
+        self.assertIn('class="indicador indicador-sucesso"', conteudo)
+        self.assertIn("cartao-operacao-status-informativo", conteudo)
+        self.assertIn("cartao-operacao-status-alerta", conteudo)
 
         novo_acesso = self.client.get("/").get_data(as_text=True)
         self.assertIn("OP-001", novo_acesso)
@@ -106,6 +110,8 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("A busca de horários já foi liberada", conteudo)
         self.assertIn("Horários compatíveis", conteudo)
+        self.assertIn("2 opções encontradas", conteudo)
+        self.assertIn("23/09/2026 às 16:30", conteudo)
         self.assertNotIn("Pendências impeditivas", conteudo)
 
     def test_abre_detalhes_da_operacao(self) -> None:
@@ -118,15 +124,20 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("Tudo concluído", conteudo)
         self.assertIn("informacao-valida", conteudo)
         self.assertNotIn("item-pendente", conteudo)
+        self.assertIn('<span class="status status-informativo">', conteudo)
 
-    def test_detalhes_destacam_pendencia_em_vermelho(self) -> None:
+    def test_detalhes_destacam_despesas_portuarias_pendentes(self) -> None:
         resposta = self.client.get("/operacoes/OP-002")
         conteudo = resposta.get_data(as_text=True)
 
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Requer atenção", conteudo)
-        self.assertIn("Documentação concluída", conteudo)
+        self.assertIn(
+            "Despesas portuárias e armazenagem regularizadas",
+            conteudo,
+        )
         self.assertIn("item-pendente", conteudo)
+        self.assertIn('<span class="status status-alerta">', conteudo)
 
     def test_assistente_nao_pre_seleciona_nenhuma_opcao(self) -> None:
         resposta = self.client.get("/operacoes/OP-001/assistente")
@@ -137,8 +148,8 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("Horários compatíveis", conteudo)
         self.assertIn("22/09/2026 às 14:00", conteudo)
         self.assertIn("Escolha um horário para continuar", conteudo)
-        self.assertNotIn("Resumo da solicitação", conteudo)
-        self.assertNotIn("Solicitar agendamento", conteudo)
+        self.assertIn("data-resumo-confirmacao", conteudo)
+        self.assertIn("data-resumo-confirmacao\n      hidden", conteudo)
 
     def test_assistente_exibe_recomendacao_e_resumo_para_solicitacao(self) -> None:
         resposta = self.client.get(
@@ -169,13 +180,37 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("22/09/2026 às 17:00", conteudo)
         self.assertIn("EFG4H56", conteudo)
 
+    def test_assistente_permite_desmarcar_horario_selecionado(self) -> None:
+        resposta = self.client.get(
+            "/operacoes/OP-001/assistente?opcao=JT-001--TR-001"
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Desmarcar horário", conteudo)
+        self.assertIn(
+            'href="/operacoes/OP-001/assistente?opcao="',
+            conteudo,
+        )
+
+        resposta_sem_selecao = self.client.get(
+            "/operacoes/OP-001/assistente?opcao="
+        )
+        self.assertNotIn(
+            'class="cartao-horario cartao-recomendado cartao-selecionado"',
+            resposta_sem_selecao.get_data(as_text=True),
+        )
+
     def test_assistente_interrompe_operacao_com_pendencia(self) -> None:
         resposta = self.client.get("/operacoes/OP-002/assistente")
         conteudo = resposta.get_data(as_text=True)
 
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Pendências impeditivas", conteudo)
-        self.assertIn("Documentação incompleta", conteudo)
+        self.assertIn(
+            "Despesas portuárias ou armazenagem pendentes",
+            conteudo,
+        )
         self.assertNotIn("Solicitar agendamento", conteudo)
 
     def test_simular_atualizacao_resolve_pendencias_existentes(self) -> None:
@@ -210,15 +245,22 @@ class PaginaInicialTestCase(unittest.TestCase):
         conteudo = resposta.get_data(as_text=True)
 
         self.assertEqual(resposta.status_code, 200)
-        self.assertIn("Simular atualização", conteudo)
+        self.assertIn("Simular atualização externa", conteudo)
+        self.assertIn(
+            'action="/operacoes/OP-002/simular-atualizacao-externa"',
+            conteudo,
+        )
+        self.assertIn('name="origem" value="assistente"', conteudo)
+        self.assertIn('class="botao botao-primario"', conteudo)
 
-    def test_assistente_exibe_resultado_sem_compatibilidade(self) -> None:
+    def test_assistente_exibe_dois_horarios_para_op003(self) -> None:
         resposta = self.client.get("/operacoes/OP-003/assistente")
         conteudo = resposta.get_data(as_text=True)
 
         self.assertEqual(resposta.status_code, 200)
-        self.assertIn("Nenhum horário compatível", conteudo)
-        self.assertNotIn("Solicitar agendamento", conteudo)
+        self.assertIn("2 opções encontradas", conteudo)
+        self.assertIn("24/09/2026 às 08:00", conteudo)
+        self.assertIn("24/09/2026 às 10:00", conteudo)
 
     def test_assistente_rejeita_opcao_desconhecida(self) -> None:
         resposta = self.client.get(
@@ -272,6 +314,7 @@ class PaginaInicialTestCase(unittest.TestCase):
         painel_confirmado = self.client.get("/").get_data(as_text=True)
         self.assertIn("Agendamento confirmado", painel_confirmado)
         self.assertIn("Ver agendamento", painel_confirmado)
+        self.assertIn("cartao-operacao-status-sucesso", painel_confirmado)
 
     def test_simula_resposta_negativa_na_mesma_pagina(self) -> None:
         self.client.post("/operacoes/simular-recebimento")
@@ -294,6 +337,7 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("Agendamento recusado pelo terminal", conteudo)
         self.assertIn("Horário recusado", conteudo)
         self.assertIn("janela e o transporte reservados foram liberados", conteudo)
+        self.assertIn("Tentar novo horário", conteudo)
         self.assertNotIn("Confirmar horário", conteudo)
         self.assertNotIn("Recusar horário", conteudo)
 
@@ -304,6 +348,20 @@ class PaginaInicialTestCase(unittest.TestCase):
         detalhes = self.client.get("/operacoes/OP-001").get_data(as_text=True)
         self.assertIn("Agendamento recusado pelo terminal", detalhes)
         self.assertIn("Ver resposta do terminal", detalhes)
+
+        reagendamento = self.client.post(
+            "/agendamentos/AG-001/reagendar",
+            follow_redirects=True,
+        )
+        conteudo_reagendamento = reagendamento.get_data(as_text=True)
+
+        self.assertEqual(reagendamento.status_code, 200)
+        self.assertEqual(
+            reagendamento.request.path,
+            "/operacoes/OP-001/assistente",
+        )
+        self.assertIn("Horários compatíveis", conteudo_reagendamento)
+        self.assertIn("Pronta para agendamento", conteudo_reagendamento)
 
     def test_assistente_recarrega_solicitacao_pendente(self) -> None:
         self.client.post(

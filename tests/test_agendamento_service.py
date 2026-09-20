@@ -57,14 +57,63 @@ class AgendamentoServiceTestCase(unittest.TestCase):
     def test_informa_quando_nao_existe_horario_compativel(self) -> None:
         resultado = buscar_horarios_compativeis(
             self.operacoes["OP-003"],
-            self.janelas,
-            self.transportes,
+            [janela for janela in self.janelas if janela["id"] == "JT-005"],
+            [
+                transporte
+                for transporte in self.transportes
+                if transporte["id"] == "TR-005"
+            ],
         )
 
         self.assertEqual(resultado["status"], "Sem horário compatível")
         self.assertIsNone(resultado["recomendacao"])
         self.assertEqual(resultado["alternativas"], [])
         self.assertIn("não coincidem", resultado["mensagem"])
+
+    def test_op002_oferece_um_novo_horario_apos_liberacao(self) -> None:
+        operacao = deepcopy(self.operacoes["OP-002"])
+        operacao["liberacao_terminal"] = True
+
+        resultado = buscar_horarios_compativeis(
+            operacao,
+            self.janelas,
+            self.transportes,
+        )
+
+        self.assertEqual(resultado["total_opcoes"], 2)
+        self.assertEqual(
+            resultado["recomendacao"]["janela_terminal_id"],
+            "JT-004",
+        )
+        self.assertEqual(
+            resultado["alternativas"][0]["janela_terminal_id"],
+            "JT-006",
+        )
+
+    def test_op003_oferece_dois_horarios_compativeis(self) -> None:
+        resultado = buscar_horarios_compativeis(
+            self.operacoes["OP-003"],
+            self.janelas,
+            self.transportes,
+        )
+
+        self.assertEqual(resultado["total_opcoes"], 2)
+        self.assertEqual(
+            resultado["recomendacao"]["janela_terminal_id"],
+            "JT-005",
+        )
+        self.assertEqual(
+            resultado["recomendacao"]["transporte_id"],
+            "TR-007",
+        )
+        self.assertEqual(
+            resultado["alternativas"][0]["janela_terminal_id"],
+            "JT-007",
+        )
+        self.assertEqual(
+            resultado["alternativas"][0]["transporte_id"],
+            "TR-005",
+        )
 
     def test_ignora_janelas_e_transportes_indisponiveis(self) -> None:
         janelas = deepcopy(self.janelas)

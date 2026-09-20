@@ -6,6 +6,7 @@ from pathlib import Path
 from services.confirmacao_service import (
     ErroConfirmacao,
     confirmar_agendamento,
+    preparar_reagendamento,
     recusar_agendamento,
     solicitar_agendamento,
 )
@@ -132,6 +133,38 @@ class ConfirmacaoServiceTestCase(unittest.TestCase):
                 "TR-001",
                 self.diretorio_dados,
             )
+
+    def test_prepara_e_registra_nova_tentativa_apos_recusa(self) -> None:
+        solicitacao = solicitar_agendamento(
+            "OP-001",
+            "JT-001",
+            "TR-001",
+            self.diretorio_dados,
+        )
+        recusar_agendamento(
+            solicitacao["agendamento"]["id"],
+            self.diretorio_dados,
+        )
+
+        preparar_reagendamento("AG-001", self.diretorio_dados)
+        nova_solicitacao = solicitar_agendamento(
+            "OP-001",
+            "JT-001",
+            "TR-001",
+            self.diretorio_dados,
+        )
+        agendamentos = carregar_agendamentos(self.diretorio_dados)
+
+        self.assertEqual(nova_solicitacao["agendamento"]["id"], "AG-002")
+        self.assertEqual(len(agendamentos), 2)
+        self.assertEqual(
+            agendamentos[0]["status"],
+            "Agendamento recusado pelo terminal",
+        )
+        self.assertEqual(
+            agendamentos[1]["status"],
+            "Aguardando confirmação do terminal",
+        )
 
     def test_impede_solicitacao_de_operacao_com_pendencia(self) -> None:
         with self.assertRaisesRegex(ErroConfirmacao, "pendências impeditivas"):

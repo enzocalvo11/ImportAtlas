@@ -13,7 +13,9 @@ from services.atualizacao_externa_service import (
 )
 from services.confirmacao_service import (
     ErroConfirmacao,
+    STATUS_RECUSADO,
     confirmar_agendamento,
+    preparar_reagendamento,
     recusar_agendamento,
     solicitar_agendamento,
 )
@@ -30,13 +32,13 @@ from services.demonstracao_service import (
     restaurar_dados_demonstracao,
 )
 from services.simulacao_service import ErroSimulacao, simular_atualizacao_prontidao
-from services.prontidao_service import verificar_prontidao
+from services.prontidao_service import STATUS_PRONTA, verificar_prontidao
 
 
 CLASSES_STATUS = {
     "Aguardando liberação": "status-alerta",
-    "Com pendências": "status-erro",
-    "Pronta para agendamento": "status-alerta",
+    "Com pendências": "status-alerta",
+    "Pronta para agendamento": "status-informativo",
     "Sem horário compatível": "status-alerta",
     "Aguardando confirmação": "status-informativo",
     "Aguardando confirmação do terminal": "status-informativo",
@@ -115,13 +117,9 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
     def detalhes_operacao(operacao_id: str) -> str:
         diretorio_dados = _diretorio_dados(app)
         operacao = _buscar_operacao(operacao_id, diretorio_dados)
-        agendamento = next(
-            (
-                item
-                for item in carregar_agendamentos(diretorio_dados)
-                if item["operacao_id"] == operacao_id
-            ),
-            None,
+        agendamento = _buscar_agendamento_operacao(
+            operacao_id,
+            diretorio_dados,
         )
         return render_template(
             "operacao.html",
@@ -138,7 +136,12 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
         diretorio_dados = _diretorio_dados(app)
         operacao = _buscar_operacao(operacao_id, diretorio_dados)
         agendamento = _buscar_agendamento_operacao(operacao_id, diretorio_dados)
-        if agendamento is not None:
+        reagendamento_liberado = (
+            agendamento is not None
+            and agendamento["status"] == STATUS_RECUSADO
+            and operacao["status"] == STATUS_PRONTA
+        )
+        if agendamento is not None and not reagendamento_liberado:
             return redirect(
                 url_for(
                     "exibir_agendamento_confirmado",
@@ -271,6 +274,24 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
                 "exibir_agendamento_confirmado",
                 agendamento_id=agendamento_id,
             ),
+            code=303,
+        )
+
+    @app.post("/agendamentos/<agendamento_id>/reagendar")
+    def iniciar_reagendamento(agendamento_id: str) -> Any:
+        try:
+            resultado = preparar_reagendamento(
+                agendamento_id,
+                _diretorio_dados(app),
+            )
+        except ErroConfirmacao as erro:
+            abort(409, description=str(erro))
+
+        operacao_id = resultado["operacao"]["id"]
+        session["operacoes_recebidas"] = True
+        session.pop(_chave_sessao_selecao(operacao_id), None)
+        return redirect(
+            url_for("iniciar_assistente", operacao_id=operacao_id),
             code=303,
         )
 
@@ -410,14 +431,12 @@ def _buscar_agendamento_operacao(
     operacao_id: str,
     diretorio_dados: Path,
 ) -> dict[str, Any] | None:
-    return next(
-        (
-            item
-            for item in carregar_agendamentos(diretorio_dados)
-            if item["operacao_id"] == operacao_id
-        ),
-        None,
-    )
+    agendamentos = [
+        item
+        for item in carregar_agendamentos(diretorio_dados)
+        if item["operacao_id"] == operacao_id
+    ]
+    return agendamentos[-1] if agendamentos else None
 
 
 def _contar_status(operacoes: list[dict[str, Any]], status: str) -> int:
@@ -458,6 +477,9 @@ def _resolver_opcao_selecionada(
     chave_informada = request.args.get("opcao")
 
     if chave_informada is not None:
+        if not chave_informada:
+            session.pop(chave_sessao, None)
+            return None
         opcao = _buscar_opcao(opcoes, chave_informada)
         if opcao is None:
             abort(400, description="O horário selecionado não está disponível.")

@@ -5,53 +5,59 @@ STATUS_PRONTA = "Pronta para agendamento"
 STATUS_COM_PENDENCIAS = "Com pendências"
 
 ROTULOS_VERIFICACAO = {
-    "liberacao_aduaneira": "Liberação aduaneira",
-    "documentacao_concluida": "Documentação concluída",
-    "tributos_regularizados": "Tributos e pagamentos regularizados",
-    "liberacao_terminal": "Liberação administrativa do terminal",
-    "possui_bloqueio": "Ausência de bloqueio impeditivo",
+    "liberacao_aduaneira": "Presença/recepção da carga averbada",
+    "documentacao_concluida": (
+        "DUIMP desembaraçada, com documentação completa"
+    ),
+    "tributos_regularizados": (
+        "Tributos e ICMS regularizados, quando aplicáveis"
+    ),
+    "possui_bloqueio": "Anuências e exigências encerradas",
+    "liberacao_terminal": (
+        "Despesas portuárias e armazenagem regularizadas"
+    ),
 }
 
 REGRAS_PRONTIDAO = (
     (
         "liberacao_aduaneira",
         True,
-        "Liberação aduaneira pendente",
-        "A carga ainda não possui liberação aduaneira.",
+        "Presença da carga não averbada",
+        "A presença ou recepção da carga ainda não foi averbada.",
         "aduana",
-        "Acompanhar a análise e obter a liberação aduaneira.",
+        "Confirmar a presença da carga e concluir a averbação.",
     ),
     (
         "documentacao_concluida",
         True,
-        "Documentação incompleta",
-        "Os documentos obrigatórios ainda não foram concluídos.",
+        "DUIMP ou documentação pendente",
+        "A DUIMP ainda não foi desembaraçada ou a documentação está incompleta.",
         "documentacao",
-        "Concluir e validar a documentação da operação.",
+        "Concluir a documentação e acompanhar o desembaraço da DUIMP.",
     ),
     (
         "tributos_regularizados",
         True,
-        "Tributos ou pagamentos pendentes",
-        "Existem tributos ou pagamentos que ainda precisam ser regularizados.",
+        "Tributos ou ICMS pendentes",
+        "Existem tributos ou valores de ICMS que ainda precisam ser regularizados.",
         "tributos",
-        "Regularizar os valores pendentes e confirmar o pagamento.",
-    ),
-    (
-        "liberacao_terminal",
-        True,
-        "Liberação administrativa do terminal pendente",
-        "O terminal ainda não liberou administrativamente a retirada.",
-        "terminal",
-        "Solicitar a regularização ao terminal.",
+        "Regularizar os tributos aplicáveis e confirmar os pagamentos.",
     ),
     (
         "possui_bloqueio",
         False,
-        "Bloqueio impeditivo ativo",
-        "Existe um bloqueio que impede o agendamento da retirada.",
+        "Anuências ou exigências em aberto",
+        "Ainda existem anuências ou exigências que impedem a retirada.",
         "bloqueio",
-        "Identificar e remover o bloqueio antes de buscar horários.",
+        "Encerrar as anuências e exigências antes de buscar horários.",
+    ),
+    (
+        "liberacao_terminal",
+        True,
+        "Despesas portuárias ou armazenagem pendentes",
+        "Existem despesas portuárias ou de armazenagem não regularizadas.",
+        "terminal",
+        "Regularizar as despesas junto ao terminal.",
     ),
 )
 

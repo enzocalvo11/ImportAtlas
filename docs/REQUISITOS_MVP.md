@@ -27,11 +27,11 @@ Permitir abrir uma operação e visualizar seus dados, liberações, pendências
 
 Verificar pelo menos:
 
-- Liberação aduaneira;
-- Documentação concluída;
-- Tributos e pagamentos regularizados;
-- Liberação administrativa do terminal;
-- Existência de bloqueio impeditivo.
+- Presença ou recepção da carga averbada;
+- DUIMP desembaraçada, com documentação completa;
+- Tributos e ICMS regularizados, quando aplicáveis;
+- Anuências e exigências encerradas;
+- Despesas portuárias e armazenagem regularizadas.
 
 Uma operação somente estará pronta quando todas as condições obrigatórias forem atendidas.
 
@@ -136,9 +136,9 @@ Todos os requisitos estão concluídos. O sistema encontra horários compatívei
 
 Existe uma pendência administrativa ou documental. O sistema interrompe o fluxo e identifica responsável e próxima ação.
 
-### Cenário C — Sem compatibilidade
+### Cenário C — Operação pronta com alternativas
 
-A carga está pronta, mas nenhuma janela do terminal coincide com a disponibilidade do transporte. O sistema informa o problema sem inventar uma solução.
+A carga está pronta e possui duas combinações entre as janelas do terminal e a disponibilidade do transporte. O sistema recomenda a primeira opção e apresenta a segunda como alternativa.
 
 ## 6. Critérios de aceite
 

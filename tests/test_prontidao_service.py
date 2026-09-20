@@ -21,7 +21,9 @@ class ProntidaoServiceTestCase(unittest.TestCase):
         self.assertEqual(resultado["status"], "Pronta para agendamento")
         self.assertEqual(resultado["pendencias"], [])
 
-    def test_operacao_com_documentacao_pendente_nao_pode_avancar(self) -> None:
+    def test_operacao_com_despesas_portuarias_pendentes_nao_pode_avancar(
+        self,
+    ) -> None:
         resultado = verificar_prontidao(self.operacoes["OP-002"])
 
         self.assertFalse(resultado["pronta"])
@@ -29,11 +31,11 @@ class ProntidaoServiceTestCase(unittest.TestCase):
         self.assertEqual(len(resultado["pendencias"]), 1)
         self.assertEqual(
             resultado["pendencias"][0]["descricao"],
-            "Documentação incompleta",
+            "Despesas portuárias ou armazenagem pendentes",
         )
         self.assertEqual(
             resultado["pendencias"][0]["responsavel"],
-            "Despachante aduaneiro",
+            "Equipe operacional",
         )
 
     def test_operacao_com_bloqueio_impeditivo_nao_pode_avancar(self) -> None:
@@ -49,8 +51,22 @@ class ProntidaoServiceTestCase(unittest.TestCase):
             "possui_bloqueio",
         )
         self.assertIn(
-            "antes de buscar horários",
+            "Encerrar as anuências e exigências",
             resultado["pendencias"][0]["proxima_acao"],
+        )
+
+    def test_exibe_as_novas_condicoes_na_ordem_definida(self) -> None:
+        resultado = verificar_prontidao(self.operacoes["OP-001"])
+
+        self.assertEqual(
+            [item["descricao"] for item in resultado["verificacoes"]],
+            [
+                "Presença/recepção da carga averbada",
+                "DUIMP desembaraçada, com documentação completa",
+                "Tributos e ICMS regularizados, quando aplicáveis",
+                "Anuências e exigências encerradas",
+                "Despesas portuárias e armazenagem regularizadas",
+            ],
         )
 
     def test_retorna_todas_as_pendencias_impeditivas(self) -> None:

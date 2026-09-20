@@ -15,7 +15,7 @@
     "veiculo": "EFG4H56",
     "inicio": "2026-09-22T17:00:00-03:00",
     "fim": "2026-09-22T19:00:00-03:00",
-    "disponivel": true
+    "disponivel": false
   },
   {
     "id": "TR-003",
@@ -33,7 +33,7 @@
     "veiculo": "MNO1P23",
     "inicio": "2026-09-23T13:00:00-03:00",
     "fim": "2026-09-23T15:00:00-03:00",
-    "disponivel": true
+    "disponivel": false
   },
   {
     "id": "TR-005",
@@ -42,6 +42,24 @@
     "veiculo": "QRS4T56",
     "inicio": "2026-09-24T10:00:00-03:00",
     "fim": "2026-09-24T12:00:00-03:00",
+    "disponivel": true
+  },
+  {
+    "id": "TR-006",
+    "operacao_id": "OP-002",
+    "transportadora": "Transportadora Litoral",
+    "veiculo": "UVW7X89",
+    "inicio": "2026-09-23T16:30:00-03:00",
+    "fim": "2026-09-23T18:00:00-03:00",
+    "disponivel": true
+  },
+  {
+    "id": "TR-007",
+    "operacao_id": "OP-003",
+    "transportadora": "Transportadora Costa",
+    "veiculo": "XYZ8A90",
+    "inicio": "2026-09-24T08:00:00-03:00",
+    "fim": "2026-09-24T09:00:00-03:00",
     "disponivel": true
   }
 ]

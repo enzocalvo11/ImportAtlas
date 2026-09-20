@@ -11,11 +11,11 @@ O sistema verifica as condições obrigatórias e monta uma checklist visual.
 Exemplo:
 
 ```text
-Liberação aduaneira: concluída
-Documentação: concluída
-Tributos e pagamentos: concluídos
-Liberação do terminal: pendente
-Bloqueios: nenhum
+Presença/recepção da carga averbada: concluída
+DUIMP desembaraçada, com documentação completa: concluída
+Tributos e ICMS regularizados, quando aplicáveis: concluídos
+Anuências e exigências encerradas: concluídas
+Despesas portuárias e armazenagem regularizadas: pendentes
 ```
 
 ## 3. Caminho com pendência
@@ -32,9 +32,9 @@ Mensagem de exemplo:
 
 ```text
 O agendamento ainda não pode ser realizado.
-Pendência: liberação administrativa do terminal.
+Pendência: despesas portuárias ou armazenagem pendentes.
 Responsável: equipe operacional.
-Próxima ação: solicitar a regularização ao terminal.
+Próxima ação: regularizar as despesas junto ao terminal.
 ```
 
 ## 4. Caminho com operação pronta

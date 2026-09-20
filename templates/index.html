@@ -43,15 +43,15 @@
         <span>Total de operações</span>
         <strong>{{ indicadores.total }}</strong>
       </article>
-      <article class="indicador indicador-alerta">
+      <article class="indicador indicador-informativo">
         <span>Prontas para agendamento</span>
         <strong>{{ indicadores.prontas }}</strong>
       </article>
-      <article class="indicador indicador-erro">
+      <article class="indicador indicador-alerta">
         <span>Com pendências</span>
         <strong>{{ indicadores.pendencias }}</strong>
       </article>
-      <article class="indicador indicador-informativo">
+      <article class="indicador indicador-sucesso">
         <span>Agendamentos confirmados</span>
         <strong>{{ indicadores.confirmadas }}</strong>
       </article>
@@ -69,7 +69,8 @@
       {% if operacoes %}
         <div class="grade-operacoes">
           {% for operacao in operacoes %}
-            <article class="cartao-operacao">
+            {% set agendamento = agendamentos_por_operacao.get(operacao.id) %}
+            <article class="cartao-operacao cartao-operacao-{{ operacao.status|classe_status }}">
               <div class="cartao-topo">
                 <span class="codigo-operacao">{{ operacao.id }}</span>
                 <span class="status {{ operacao.status|classe_status }}">
@@ -97,9 +98,9 @@
                 <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">
                   Ver detalhes
                 </a>
-                {% if agendamentos_por_operacao.get(operacao.id) %}
-                  <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamentos_por_operacao[operacao.id].id) }}">
-                    {{ "Ver agendamento" if agendamentos_por_operacao[operacao.id].status == "Agendamento confirmado" else "Ver resposta do terminal" if agendamentos_por_operacao[operacao.id].status == "Agendamento recusado pelo terminal" else "Acompanhar solicitação" }}
+                {% if agendamento and not (agendamento.status == "Agendamento recusado pelo terminal" and operacao.status == "Pronta para agendamento") %}
+                  <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamento.id) }}">
+                    {{ "Ver agendamento" if agendamento.status == "Agendamento confirmado" else "Ver resposta do terminal" if agendamento.status == "Agendamento recusado pelo terminal" else "Acompanhar solicitação" }}
                   </a>
                 {% else %}
                   <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">
