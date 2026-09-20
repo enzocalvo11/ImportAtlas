@@ -6,7 +6,10 @@ from typing import Any
 
 from flask import Flask, abort, redirect, render_template, request, session, url_for
 
-from services.agendamento_service import buscar_horarios_compativeis
+from services.agendamento_service import (
+    buscar_horarios_compativeis,
+    combinacoes_recusadas_da_operacao,
+)
 from services.atualizacao_externa_service import (
     ErroAtualizacaoExterna,
     simular_atualizacao_externa,
@@ -152,6 +155,9 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             operacao,
             carregar_janelas_terminal(diretorio_dados),
             carregar_disponibilidades_transporte(diretorio_dados),
+            combinacoes_recusadas=combinacoes_recusadas_da_operacao(
+                operacao_id, carregar_agendamentos(diretorio_dados)
+            ),
         )
         opcoes = _preparar_opcoes(resultado)
         opcao_selecionada = _resolver_opcao_selecionada(operacao_id, opcoes)

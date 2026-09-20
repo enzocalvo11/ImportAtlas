@@ -11,13 +11,36 @@ STATUS_RECUSADO = "Agendamento recusado pelo terminal"
 DURACAO_PADRAO_MINUTOS = 60
 
 
+def combinacoes_recusadas_da_operacao(
+    operacao_id: str,
+    agendamentos: list[dict[str, Any]],
+) -> frozenset[tuple[str, str]]:
+    """Combinações de janela+transporte já recusadas pelo terminal para a operação.
+
+    Usado para não oferecer de novo, no reagendamento, um horário que o
+    terminal já rejeitou explicitamente para essa mesma operação.
+    """
+    return frozenset(
+        (item["janela_terminal_id"], item["transporte_id"])
+        for item in agendamentos
+        if item["operacao_id"] == operacao_id and item["status"] == STATUS_RECUSADO
+    )
+
+
 def buscar_horarios_compativeis(
     operacao: dict[str, Any],
     janelas_terminal: list[dict[str, Any]],
     disponibilidades_transporte: list[dict[str, Any]],
     duracao_minutos: int = DURACAO_PADRAO_MINUTOS,
+    combinacoes_recusadas: frozenset[tuple[str, str]] = frozenset(),
 ) -> dict[str, Any]:
-    """Retorna a primeira compatibilidade e até duas alternativas."""
+    """Retorna a primeira compatibilidade e até duas alternativas.
+
+    `combinacoes_recusadas` é o conjunto de pares (janela_terminal_id,
+    transporte_id) que o terminal já recusou para esta operação; essas
+    combinações são excluídas da busca, mesmo que os recursos tenham
+    voltado a ficar disponíveis para outras operações.
+    """
     if duracao_minutos <= 0:
         raise ValueError("A duração do atendimento deve ser maior que zero.")
 
@@ -57,6 +80,7 @@ def buscar_horarios_compativeis(
         janelas_terminal,
         disponibilidades_transporte,
         duracao_minutos,
+        combinacoes_recusadas,
     )
 
     if not compatibilidades:
@@ -94,6 +118,7 @@ def _calcular_compatibilidades(
     janelas_terminal: list[dict[str, Any]],
     disponibilidades_transporte: list[dict[str, Any]],
     duracao_minutos: int,
+    combinacoes_recusadas: frozenset[tuple[str, str]] = frozenset(),
 ) -> list[dict[str, Any]]:
     chegada_prevista = datetime.fromisoformat(operacao["chegada_prevista"])
     duracao = timedelta(minutes=duracao_minutos)
@@ -116,6 +141,9 @@ def _calcular_compatibilidades(
         fim_janela = datetime.fromisoformat(janela["fim"])
 
         for transporte in transportes_validos:
+            if (janela["id"], transporte["id"]) in combinacoes_recusadas:
+                continue
+
             inicio_transporte = datetime.fromisoformat(transporte["inicio"])
             fim_transporte = datetime.fromisoformat(transporte["fim"])
             inicio_possivel = max(

@@ -3,7 +3,10 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from services.agendamento_service import buscar_horarios_compativeis
+from services.agendamento_service import (
+    buscar_horarios_compativeis,
+    combinacoes_recusadas_da_operacao,
+)
 from services.data_service import (
     DIRETORIO_DADOS,
     carregar_agendamentos,
@@ -63,7 +66,14 @@ def _solicitar_agendamento(
             "Esta operação já possui uma solicitação de agendamento."
         )
 
-    resultado = buscar_horarios_compativeis(operacao, janelas, transportes)
+    resultado = buscar_horarios_compativeis(
+        operacao,
+        janelas,
+        transportes,
+        combinacoes_recusadas=combinacoes_recusadas_da_operacao(
+            operacao_id, agendamentos
+        ),
+    )
     if resultado["pendencias"]:
         raise ErroConfirmacao(
             "A operação possui pendências impeditivas e não pode ser agendada."
