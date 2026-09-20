@@ -18,7 +18,7 @@
       "bloqueio": "Equipe operacional",
       "transporte": "Transportadora Rota Sul"
     },
-    "status": "Agendamento confirmado"
+    "status": "Pronta para agendamento"
   },
   {
     "id": "OP-002",
@@ -29,7 +29,7 @@
     "liberacao_aduaneira": true,
     "documentacao_concluida": true,
     "tributos_regularizados": true,
-    "liberacao_terminal": true,
+    "liberacao_terminal": false,
     "possui_bloqueio": false,
     "responsaveis": {
       "aduana": "Despachante aduaneiro",
@@ -39,7 +39,7 @@
       "bloqueio": "Equipe operacional",
       "transporte": "Transportadora Litoral"
     },
-    "status": "Agendamento confirmado"
+    "status": "Com pendências"
   },
   {
     "id": "OP-003",
