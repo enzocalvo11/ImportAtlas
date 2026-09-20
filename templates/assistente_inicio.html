@@ -141,11 +141,13 @@
       </div>
     </section>
 
-    <section class="painel secao-assistente resumo-confirmacao" aria-labelledby="titulo-confirmacao">
-      <div class="titulo-painel">
-        <div>
-          <p class="etapa">Etapa 3</p>
-          <h2 id="titulo-confirmacao">Resumo para confirmação</h2>
+    {% if opcao_selecionada %}
+      <section class="painel secao-assistente resumo-confirmacao" aria-labelledby="titulo-confirmacao">
+        <div class="titulo-painel">
+          <div>
+            <p class="etapa">Etapa 3</p>
+            <h2 id="titulo-confirmacao">Resumo para confirmação</h2>
+          </div>
         </div>
       </div>
       <dl class="grade-resumo">
