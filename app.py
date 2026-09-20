@@ -18,12 +18,13 @@ from services.demonstracao_service import (
     DIRETORIO_BASE_DEMO,
     restaurar_dados_demonstracao,
 )
+from services.prontidao_service import verificar_prontidao
 
 
 CLASSES_STATUS = {
     "Aguardando liberação": "status-alerta",
     "Com pendências": "status-erro",
-    "Pronta para agendamento": "status-sucesso",
+    "Pronta para agendamento": "status-alerta",
     "Sem horário compatível": "status-alerta",
     "Aguardando confirmação": "status-informativo",
     "Agendamento confirmado": "status-sucesso",
@@ -83,6 +84,7 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             "operacao.html",
             operacao=operacao,
             agendamento=agendamento,
+            prontidao=verificar_prontidao(operacao),
         )
 
     @app.get("/operacoes/<operacao_id>/assistente")

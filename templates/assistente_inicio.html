@@ -97,18 +97,30 @@
         <span class="quantidade">{{ resultado.total_opcoes }} opções encontradas</span>
       </div>
 
-      <div class="grade-horarios">
+      <div class="grade-horarios" data-assistente-agendamento>
         {% for opcao in opcoes %}
-          <article class="cartao-horario {{ 'cartao-recomendado' if opcao.recomendada else '' }} {{ 'cartao-selecionado' if opcao.chave == opcao_selecionada.chave else '' }}">
+          <article
+            class="cartao-horario {{ 'cartao-recomendado' if opcao.recomendada else '' }} {{ 'cartao-selecionado' if opcao.chave == opcao_selecionada.chave else '' }}"
+            data-opcao-horario
+            data-chave="{{ opcao.chave }}"
+            data-janela-terminal-id="{{ opcao.janela_terminal_id }}"
+            data-transporte-id="{{ opcao.transporte_id }}"
+            data-terminal="{{ opcao.terminal }}"
+            data-inicio-formatado="{{ opcao.inicio|data_br }}"
+            data-transportadora="{{ opcao.transportadora }}"
+            data-veiculo="{{ opcao.veiculo }}"
+          >
             <div class="cartao-horario-topo">
               {% if opcao.recomendada %}
                 <span class="rotulo-recomendacao">Recomendado</span>
               {% else %}
                 <span class="rotulo-alternativa">Alternativa {{ loop.index - 1 }}</span>
               {% endif %}
-              {% if opcao.chave == opcao_selecionada.chave %}
-                <span class="rotulo-selecionado">Selecionado</span>
-              {% endif %}
+              <span
+                class="rotulo-selecionado"
+                data-rotulo-selecionado
+                {% if opcao.chave != opcao_selecionada.chave %}hidden{% endif %}
+              >Selecionado</span>
             </div>
             <p class="horario-principal">{{ opcao.inicio|data_br }}</p>
             <p class="duracao-horario">Até {{ opcao.fim|data_br }}</p>
@@ -116,11 +128,14 @@
               <div><dt>Transportadora</dt><dd>{{ opcao.transportadora }}</dd></div>
               <div><dt>Veículo</dt><dd>{{ opcao.veiculo }}</dd></div>
             </dl>
-            {% if opcao.chave != opcao_selecionada.chave %}
-              <a class="botao botao-secundario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id, opcao=opcao.chave) }}">
-                Selecionar este horário
-              </a>
-            {% endif %}
+            <a
+              class="botao botao-secundario seletor-horario"
+              href="{{ url_for('iniciar_assistente', operacao_id=operacao.id, opcao=opcao.chave) }}"
+              data-selecionar-horario
+              {% if opcao.chave == opcao_selecionada.chave %}aria-current="true"{% endif %}
+            >
+              {{ "Horário selecionado" if opcao.chave == opcao_selecionada.chave else "Selecionar este horário" }}
+            </a>
           </article>
         {% endfor %}
       </div>
@@ -136,10 +151,10 @@
       <dl class="grade-resumo">
         <div><dt>Operação</dt><dd>{{ operacao.id }}</dd></div>
         <div><dt>Carga</dt><dd>{{ operacao.container }}</dd></div>
-        <div><dt>Terminal</dt><dd>{{ opcao_selecionada.terminal }}</dd></div>
-        <div><dt>Data e horário</dt><dd>{{ opcao_selecionada.inicio|data_br }}</dd></div>
-        <div><dt>Transportadora</dt><dd>{{ opcao_selecionada.transportadora }}</dd></div>
-        <div><dt>Veículo</dt><dd>{{ opcao_selecionada.veiculo }}</dd></div>
+        <div><dt>Terminal</dt><dd data-resumo-horario="terminal">{{ opcao_selecionada.terminal }}</dd></div>
+        <div><dt>Data e horário</dt><dd data-resumo-horario="inicio">{{ opcao_selecionada.inicio|data_br }}</dd></div>
+        <div><dt>Transportadora</dt><dd data-resumo-horario="transportadora">{{ opcao_selecionada.transportadora }}</dd></div>
+        <div><dt>Veículo</dt><dd data-resumo-horario="veiculo">{{ opcao_selecionada.veiculo }}</dd></div>
       </dl>
       <div class="comunicacao-simulada">
         <strong>Participantes que seriam comunicados</strong>
@@ -150,8 +165,8 @@
       <div class="barra-confirmacao">
         <p>Confira os dados. O registro só será criado depois da sua confirmação.</p>
         <form method="post" action="{{ url_for('confirmar_retirada', operacao_id=operacao.id) }}">
-          <input type="hidden" name="janela_terminal_id" value="{{ opcao_selecionada.janela_terminal_id }}">
-          <input type="hidden" name="transporte_id" value="{{ opcao_selecionada.transporte_id }}">
+          <input type="hidden" name="janela_terminal_id" value="{{ opcao_selecionada.janela_terminal_id }}" data-campo-horario="janela_terminal_id">
+          <input type="hidden" name="transporte_id" value="{{ opcao_selecionada.transporte_id }}" data-campo-horario="transporte_id">
           <button class="botao botao-primario" type="submit">Confirmar agendamento</button>
         </form>
       </div>
@@ -159,6 +174,6 @@
   {% endif %}
 
   <div class="barra-acoes barra-acoes-assistente">
-    <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">Voltar aos detalhes</a>
+    <a class="botao botao-secundario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
   </div>
 {% endblock %}
