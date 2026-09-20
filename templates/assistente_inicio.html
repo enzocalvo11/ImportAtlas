@@ -19,7 +19,14 @@
         {{ operacao.container }} · {{ operacao.terminal }} · {{ operacao.importador }}
       </p>
     </div>
-    <span class="status {{ resultado.status|classe_status }}">{{ resultado.status }}</span>
+    <div class="cabecalho-detalhes-acoes">
+      {% if resultado.pendencias %}
+        <form method="post" action="{{ url_for('simular_atualizacao', operacao_id=operacao.id) }}">
+          <button class="botao botao-secundario" type="submit">Simular atualização</button>
+        </form>
+      {% endif %}
+      <span class="status {{ resultado.status|classe_status }}">{{ resultado.status }}</span>
+    </div>
   </section>
 
   {% if atualizacao_simulada %}
@@ -76,15 +83,6 @@
             </dl>
           </article>
         {% endfor %}
-      </div>
-      <div class="barra-atualizacao painel">
-        <p>Simule a chegada da confirmação pelo sistema externo responsável.</p>
-        <form method="post" action="{{ url_for('atualizar_operacao_externamente', operacao_id=operacao.id) }}">
-          <input type="hidden" name="origem" value="assistente">
-          <button class="botao botao-primario" type="submit">
-            Simular atualização externa
-          </button>
-        </form>
       </div>
     </section>
   {% elif resultado.status == "Agendamento confirmado" %}
@@ -156,6 +154,12 @@
         {% endfor %}
       </div>
     </section>
+
+    {% if not opcao_selecionada %}
+      <div class="aviso aviso-informativo" role="status">
+        <strong>Escolha um horário para continuar.</strong>
+      </div>
+    {% endif %}
 
     {% if opcao_selecionada %}
       <section class="painel secao-assistente resumo-confirmacao" aria-labelledby="titulo-confirmacao">
