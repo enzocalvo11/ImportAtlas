@@ -27,7 +27,7 @@
     "terminal": "Ecoporto Santos",
     "chegada_prevista": "2026-09-23T07:30:00-03:00",
     "liberacao_aduaneira": true,
-    "documentacao_concluida": true,
+    "documentacao_concluida": false,
     "tributos_regularizados": true,
     "liberacao_terminal": true,
     "possui_bloqueio": false,
@@ -39,7 +39,7 @@
       "bloqueio": "Equipe operacional",
       "transporte": "Transportadora Litoral"
     },
-    "status": "Pronta para agendamento"
+    "status": "Com pendências"
   },
   {
     "id": "OP-003",
