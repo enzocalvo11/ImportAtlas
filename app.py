@@ -1,8 +1,9 @@
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, abort, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 
 from services.agendamento_service import buscar_horarios_compativeis
 from services.confirmacao_service import ErroConfirmacao, confirmar_agendamento
@@ -23,7 +24,7 @@ from services.demonstracao_service import (
 CLASSES_STATUS = {
     "Aguardando liberação": "status-alerta",
     "Com pendências": "status-erro",
-    "Pronta para agendamento": "status-sucesso",
+    "Pronta para agendamento": "status-alerta",
     "Sem horário compatível": "status-alerta",
     "Aguardando confirmação": "status-informativo",
     "Agendamento confirmado": "status-sucesso",
@@ -33,6 +34,9 @@ CLASSES_STATUS = {
 def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
     """Cria a aplicação web do ImportAtlas."""
     app = Flask(__name__)
+    app.secret_key = os.environ.get(
+        "SECRET_KEY", "chave-de-desenvolvimento-import-atlas"
+    )
     app.config.from_mapping(
         DIRETORIO_DADOS=DIRETORIO_DADOS,
         DIRETORIO_BASE_DEMO=DIRETORIO_BASE_DEMO,
@@ -95,10 +99,7 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             carregar_disponibilidades_transporte(diretorio_dados),
         )
         opcoes = _preparar_opcoes(resultado)
-        opcao_selecionada = _selecionar_opcao(
-            opcoes,
-            request.args.get("opcao"),
-        )
+        opcao_selecionada = _resolver_opcao_selecionada(operacao_id, opcoes)
         participantes = list(dict.fromkeys(operacao["responsaveis"].values()))
         return render_template(
             "assistente_inicio.html",
@@ -126,6 +127,7 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
         except ErroConfirmacao as erro:
             abort(409, description=str(erro))
 
+        session.pop(_chave_sessao_selecao(operacao_id), None)
         return redirect(
             url_for(
                 "exibir_agendamento_confirmado",
@@ -174,6 +176,7 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             _diretorio_dados(app),
             Path(app.config["DIRETORIO_BASE_DEMO"]),
         )
+        session.clear()
         return redirect(
             url_for("painel_operacoes", demonstracao="restaurada"),
             code=303,
@@ -290,22 +293,43 @@ def _preparar_opcoes(resultado: dict[str, Any]) -> list[dict[str, Any]]:
     return opcoes
 
 
-def _selecionar_opcao(
-    opcoes: list[dict[str, Any]],
-    chave_solicitada: str | None,
-) -> dict[str, Any] | None:
-    if not opcoes:
-        return None
-    if chave_solicitada is None:
-        return opcoes[0]
+def _chave_sessao_selecao(operacao_id: str) -> str:
+    return f"opcao_selecionada_{operacao_id}"
 
-    opcao = next(
-        (item for item in opcoes if item["chave"] == chave_solicitada),
+
+def _resolver_opcao_selecionada(
+    operacao_id: str,
+    opcoes: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    """Nenhuma opção é pré-selecionada. A escolha do usuário é lembrada na sessão."""
+    chave_sessao = _chave_sessao_selecao(operacao_id)
+    chave_informada = request.args.get("opcao")
+
+    if chave_informada is not None:
+        opcao = _buscar_opcao(opcoes, chave_informada)
+        if opcao is None:
+            abort(400, description="O horário selecionado não está disponível.")
+        session[chave_sessao] = chave_informada
+        return opcao
+
+    chave_lembrada = session.get(chave_sessao)
+    if chave_lembrada is None:
+        return None
+
+    opcao = _buscar_opcao(opcoes, chave_lembrada)
+    if opcao is None:
+        session.pop(chave_sessao, None)
+    return opcao
+
+
+def _buscar_opcao(
+    opcoes: list[dict[str, Any]],
+    chave: str,
+) -> dict[str, Any] | None:
+    return next(
+        (item for item in opcoes if item["chave"] == chave),
         None,
     )
-    if opcao is None:
-        abort(400, description="O horário selecionado não está disponível.")
-    return opcao
 
 
 def _formatar_data(valor: str) -> str:
