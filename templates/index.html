@@ -11,7 +11,7 @@
         Acompanhe a situação das cargas e inicie a preparação da retirada.
       </p>
     </div>
-    <form method="post" action="{{ url_for('restaurar_demonstracao') }}" onsubmit="return confirm('Restaurar os dados iniciais da demonstração? O agendamento registrado será removido.');">
+    <form method="post" action="{{ url_for('restaurar_demonstracao') }}">
       <button class="botao botao-secundario" type="submit">Restaurar demonstração</button>
     </form>
   </section>
