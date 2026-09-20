@@ -99,14 +99,15 @@
 
       <div class="grade-horarios">
         {% for opcao in opcoes %}
-          <article class="cartao-horario {{ 'cartao-recomendado' if opcao.recomendada else '' }} {{ 'cartao-selecionado' if opcao.chave == opcao_selecionada.chave else '' }}">
+          {% set selecionada = opcao_selecionada and opcao.chave == opcao_selecionada.chave %}
+          <article class="cartao-horario {{ 'cartao-recomendado' if opcao.recomendada else '' }} {{ 'cartao-selecionado' if selecionada else '' }}">
             <div class="cartao-horario-topo">
               {% if opcao.recomendada %}
                 <span class="rotulo-recomendacao">Recomendado</span>
               {% else %}
                 <span class="rotulo-alternativa">Alternativa {{ loop.index - 1 }}</span>
               {% endif %}
-              {% if opcao.chave == opcao_selecionada.chave %}
+              {% if selecionada %}
                 <span class="rotulo-selecionado">Selecionado</span>
               {% endif %}
             </div>
@@ -116,7 +117,7 @@
               <div><dt>Transportadora</dt><dd>{{ opcao.transportadora }}</dd></div>
               <div><dt>Veículo</dt><dd>{{ opcao.veiculo }}</dd></div>
             </dl>
-            {% if opcao.chave != opcao_selecionada.chave %}
+            {% if not selecionada %}
               <a class="botao botao-secundario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id, opcao=opcao.chave) }}">
                 Selecionar este horário
               </a>
@@ -126,36 +127,45 @@
       </div>
     </section>
 
-    <section class="painel secao-assistente resumo-confirmacao" aria-labelledby="titulo-confirmacao">
-      <div class="titulo-painel">
-        <div>
-          <p class="etapa">Etapa 3</p>
-          <h2 id="titulo-confirmacao">Resumo para confirmação</h2>
+    {% if opcao_selecionada %}
+      <section class="painel secao-assistente resumo-confirmacao" aria-labelledby="titulo-confirmacao">
+        <div class="titulo-painel">
+          <div>
+            <p class="etapa">Etapa 3</p>
+            <h2 id="titulo-confirmacao">Resumo para confirmação</h2>
+          </div>
         </div>
-      </div>
-      <dl class="grade-resumo">
-        <div><dt>Operação</dt><dd>{{ operacao.id }}</dd></div>
-        <div><dt>Carga</dt><dd>{{ operacao.container }}</dd></div>
-        <div><dt>Terminal</dt><dd>{{ opcao_selecionada.terminal }}</dd></div>
-        <div><dt>Data e horário</dt><dd>{{ opcao_selecionada.inicio|data_br }}</dd></div>
-        <div><dt>Transportadora</dt><dd>{{ opcao_selecionada.transportadora }}</dd></div>
-        <div><dt>Veículo</dt><dd>{{ opcao_selecionada.veiculo }}</dd></div>
-      </dl>
-      <div class="comunicacao-simulada">
-        <strong>Participantes que seriam comunicados</strong>
-        <ul>
-          {% for participante in participantes %}<li>{{ participante }}</li>{% endfor %}
-        </ul>
-      </div>
-      <div class="barra-confirmacao">
-        <p>Confira os dados. O registro só será criado depois da sua confirmação.</p>
-        <form method="post" action="{{ url_for('confirmar_retirada', operacao_id=operacao.id) }}">
-          <input type="hidden" name="janela_terminal_id" value="{{ opcao_selecionada.janela_terminal_id }}">
-          <input type="hidden" name="transporte_id" value="{{ opcao_selecionada.transporte_id }}">
-          <button class="botao botao-primario" type="submit">Confirmar agendamento</button>
-        </form>
-      </div>
-    </section>
+        <dl class="grade-resumo">
+          <div><dt>Operação</dt><dd>{{ operacao.id }}</dd></div>
+          <div><dt>Carga</dt><dd>{{ operacao.container }}</dd></div>
+          <div><dt>Terminal</dt><dd>{{ opcao_selecionada.terminal }}</dd></div>
+          <div><dt>Data e horário</dt><dd>{{ opcao_selecionada.inicio|data_br }}</dd></div>
+          <div><dt>Transportadora</dt><dd>{{ opcao_selecionada.transportadora }}</dd></div>
+          <div><dt>Veículo</dt><dd>{{ opcao_selecionada.veiculo }}</dd></div>
+        </dl>
+        <div class="comunicacao-simulada">
+          <strong>Participantes que seriam comunicados</strong>
+          <ul>
+            {% for participante in participantes %}<li>{{ participante }}</li>{% endfor %}
+          </ul>
+        </div>
+        <div class="barra-confirmacao">
+          <p>Confira os dados. O registro só será criado depois da sua confirmação.</p>
+          <form method="post" action="{{ url_for('confirmar_retirada', operacao_id=operacao.id) }}">
+            <input type="hidden" name="janela_terminal_id" value="{{ opcao_selecionada.janela_terminal_id }}">
+            <input type="hidden" name="transporte_id" value="{{ opcao_selecionada.transporte_id }}">
+            <button class="botao botao-primario" type="submit">Confirmar agendamento</button>
+          </form>
+        </div>
+      </section>
+    {% else %}
+      <section class="secao-assistente" aria-labelledby="titulo-escolha-pendente">
+        <div class="aviso aviso-informativo">
+          <strong id="titulo-escolha-pendente">Escolha um horário para continuar.</strong>
+          <p>O resumo para confirmação aparece depois que você selecionar uma das opções acima.</p>
+        </div>
+      </section>
+    {% endif %}
   {% endif %}
 
   <div class="barra-acoes barra-acoes-assistente">
