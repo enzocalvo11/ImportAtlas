@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Agendamento confirmado — {{ operacao.id }} — ImportAtlas{% endblock %}
+
+{% block content %}
+  <nav class="navegacao-contextual" aria-label="Navegação estrutural">
+    <a href="{{ url_for('painel_operacoes') }}">Painel de operações</a>
+    <span aria-hidden="true">/</span>
+    <a href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">{{ operacao.id }}</a>
+    <span aria-hidden="true">/</span>
+    <span>Agendamento confirmado</span>
+  </nav>
+
+  <section class="painel confirmacao-concluida" aria-labelledby="titulo-confirmado">
+    <div class="icone-confirmacao" aria-hidden="true">✓</div>
+    <p class="identificacao">Registro concluído</p>
+    <h1 id="titulo-confirmado">Agendamento confirmado</h1>
+    <p class="descricao-pagina">
+      A retirada da operação {{ operacao.id }} foi registrada com sucesso.
+    </p>
+
+    <dl class="grade-resumo resumo-final">
+      <div><dt>Agendamento</dt><dd>{{ agendamento.id }}</dd></div>
+      <div><dt>Operação</dt><dd>{{ operacao.id }}</dd></div>
+      <div><dt>Carga</dt><dd>{{ operacao.container }}</dd></div>
+      <div><dt>Terminal</dt><dd>{{ operacao.terminal }}</dd></div>
+      <div><dt>Data e horário</dt><dd>{{ agendamento.inicio|data_br }}</dd></div>
+      <div><dt>Transportadora</dt><dd>{{ transporte.transportadora }}</dd></div>
+      <div><dt>Veículo</dt><dd>{{ transporte.veiculo }}</dd></div>
+      <div><dt>Status</dt><dd>{{ agendamento.status }}</dd></div>
+    </dl>
+
+    <section class="comunicacao-simulada comunicacao-final" aria-labelledby="titulo-comunicacoes">
+      <strong id="titulo-comunicacoes">Comunicação simulada</strong>
+      <p>Nenhuma mensagem real foi enviada. Em uma integração futura, estes participantes seriam comunicados:</p>
+      <ul class="lista-comunicacoes">
+        {% for comunicacao in comunicacoes %}
+          <li>
+            <span>{{ comunicacao.destinatario }}</span>
+            <small>{{ comunicacao.status }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <div class="barra-acoes barra-acoes-confirmacao">
+      <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">Ver operação</a>
+      <a class="botao botao-primario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
+    </div>
+  </section>
+{% endblock %}

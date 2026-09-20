@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any
 
 
@@ -37,6 +38,17 @@ ESQUEMA_DISPONIBILIDADE_TRANSPORTE = {
     "inicio": str,
     "fim": str,
     "disponivel": bool,
+}
+
+ESQUEMA_AGENDAMENTO = {
+    "id": str,
+    "operacao_id": str,
+    "janela_terminal_id": str,
+    "transporte_id": str,
+    "inicio": str,
+    "fim": str,
+    "status": str,
+    "confirmado_em": str,
 }
 
 CAMPOS_RESPONSAVEIS = {
@@ -87,6 +99,68 @@ def carregar_disponibilidades_transporte(
     )
     _validar_intervalos(registros, "disponibilidades de transporte")
     return registros
+
+
+def carregar_agendamentos(
+    diretorio_dados: Path = DIRETORIO_DADOS,
+) -> list[dict[str, Any]]:
+    registros = _carregar_colecao(
+        diretorio_dados / "agendamentos.json",
+        ESQUEMA_AGENDAMENTO,
+        campos_data=("inicio", "fim", "confirmado_em"),
+    )
+    _validar_intervalos(registros, "agendamentos")
+    return registros
+
+
+def salvar_estado_agendamento(
+    operacoes: list[dict[str, Any]],
+    janelas_terminal: list[dict[str, Any]],
+    disponibilidades_transporte: list[dict[str, Any]],
+    agendamentos: list[dict[str, Any]],
+    diretorio_dados: Path = DIRETORIO_DADOS,
+) -> None:
+    """Valida e salva os arquivos alterados após uma confirmação."""
+    _validar_registros(
+        operacoes,
+        ESQUEMA_OPERACAO,
+        ("chegada_prevista",),
+        "operacoes.json",
+    )
+    _validar_responsaveis(operacoes)
+    _validar_registros(
+        janelas_terminal,
+        ESQUEMA_JANELA_TERMINAL,
+        ("inicio", "fim"),
+        "janelas_terminal.json",
+    )
+    _validar_intervalos(janelas_terminal, "janelas do terminal")
+    _validar_registros(
+        disponibilidades_transporte,
+        ESQUEMA_DISPONIBILIDADE_TRANSPORTE,
+        ("inicio", "fim"),
+        "disponibilidades_transporte.json",
+    )
+    _validar_intervalos(
+        disponibilidades_transporte,
+        "disponibilidades de transporte",
+    )
+    _validar_registros(
+        agendamentos,
+        ESQUEMA_AGENDAMENTO,
+        ("inicio", "fim", "confirmado_em"),
+        "agendamentos.json",
+    )
+    _validar_intervalos(agendamentos, "agendamentos")
+
+    colecoes = {
+        "operacoes.json": operacoes,
+        "janelas_terminal.json": janelas_terminal,
+        "disponibilidades_transporte.json": disponibilidades_transporte,
+        "agendamentos.json": agendamentos,
+    }
+    for nome_arquivo, registros in colecoes.items():
+        _salvar_colecao(diretorio_dados / nome_arquivo, registros)
 
 
 def _carregar_colecao(
@@ -198,3 +272,28 @@ def _converter_data(
             f"O campo '{campo}' do registro {identificador} em {nome_arquivo} "
             "deve usar uma data ISO válida."
         ) from erro
+
+
+def _salvar_colecao(
+    caminho: Path,
+    registros: list[dict[str, Any]],
+) -> None:
+    caminho_temporario = None
+    try:
+        with NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=caminho.parent,
+            prefix=f".{caminho.stem}-",
+            suffix=".tmp",
+            delete=False,
+        ) as arquivo:
+            json.dump(registros, arquivo, ensure_ascii=False, indent=2)
+            arquivo.write("\n")
+            caminho_temporario = Path(arquivo.name)
+
+        caminho_temporario.replace(caminho)
+    finally:
+        if caminho_temporario and caminho_temporario.exists():
+            caminho_temporario.unlink()

@@ -7,16 +7,20 @@ from services.data_service import (
     carregar_janelas_terminal,
     carregar_operacoes,
 )
+from services.demonstracao_service import DIRETORIO_BASE_DEMO
 
 
 class AgendamentoServiceTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.operacoes = {
-            operacao["id"]: operacao for operacao in carregar_operacoes()
+            operacao["id"]: operacao
+            for operacao in carregar_operacoes(DIRETORIO_BASE_DEMO)
         }
-        cls.janelas = carregar_janelas_terminal()
-        cls.transportes = carregar_disponibilidades_transporte()
+        cls.janelas = carregar_janelas_terminal(DIRETORIO_BASE_DEMO)
+        cls.transportes = carregar_disponibilidades_transporte(
+            DIRETORIO_BASE_DEMO
+        )
 
     def test_recomenda_primeiro_horario_e_retorna_duas_alternativas(self) -> None:
         resultado = buscar_horarios_compativeis(

@@ -144,6 +144,14 @@ h3 {
   line-height: 1.6;
 }
 
+.cabecalho-pagina > form {
+  flex: 0 0 auto;
+}
+
+.aviso-painel {
+  margin: -0.75rem 0 2rem;
+}
+
 .indicadores {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -451,6 +459,40 @@ a:focus-visible {
   padding: 1.5rem;
 }
 
+.linha-tempo {
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linha-tempo li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.marcador-linha-tempo {
+  width: 12px;
+  height: 12px;
+  margin-top: 0.25rem;
+  border: 3px solid #c9e8da;
+  border-radius: 50%;
+  background: #2b8a68;
+  box-shadow: 0 0 0 3px #eef9f4;
+}
+
+.linha-tempo strong {
+  color: #176347;
+  font-size: 0.88rem;
+}
+
+.linha-tempo p {
+  margin: 0.35rem 0 0;
+  color: #607687;
+  font-size: 0.8rem;
+}
+
 .barra-acoes {
   margin-top: 1.5rem;
 }
@@ -590,6 +632,12 @@ a:focus-visible {
   border: 1px solid #ebd49f;
   color: #765516;
   background: #fff9e9;
+}
+
+.aviso-sucesso {
+  border: 1px solid #b9dfce;
+  color: #176347;
+  background: #eef9f4;
 }
 
 .titulo-secao-assistente {
@@ -759,6 +807,10 @@ a:focus-visible {
   font-size: 0.8rem;
 }
 
+.barra-confirmacao form {
+  margin: 0;
+}
+
 .botao:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -770,6 +822,54 @@ a:focus-visible {
 
 .barra-acoes-assistente {
   justify-content: flex-start;
+}
+
+.confirmacao-concluida {
+  width: min(100%, 900px);
+  margin-inline: auto;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border-top: 5px solid #2b8a68;
+}
+
+.icone-confirmacao {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 1.25rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #2b8a68;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.resumo-final {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 2rem;
+}
+
+.comunicacao-final > p {
+  margin: 0.5rem 0 0;
+  line-height: 1.5;
+}
+
+.lista-comunicacoes {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lista-comunicacoes li {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.lista-comunicacoes small {
+  color: #6a7e8c;
+}
+
+.barra-acoes-confirmacao {
+  margin-top: 1.5rem;
 }
 
 .rodape {
@@ -791,7 +891,8 @@ a:focus-visible {
   }
 
   .grade-horarios,
-  .grade-resumo {
+  .grade-resumo,
+  .resumo-final {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -821,11 +922,18 @@ a:focus-visible {
     flex-direction: column;
   }
 
+  .cabecalho-pagina > form,
+  .cabecalho-pagina > form .botao {
+    width: 100%;
+  }
+
   .indicadores,
   .grade-detalhes,
   .grade-pendencias,
   .grade-horarios,
-  .grade-resumo {
+  .grade-resumo,
+  .resumo-final,
+  .lista-comunicacoes {
     grid-template-columns: 1fr;
   }
 

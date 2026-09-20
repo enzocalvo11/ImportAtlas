@@ -11,7 +11,17 @@
         Acompanhe a situação das cargas e inicie a preparação da retirada.
       </p>
     </div>
+    <form method="post" action="{{ url_for('restaurar_demonstracao') }}" onsubmit="return confirm('Restaurar os dados iniciais da demonstração? O agendamento registrado será removido.');">
+      <button class="botao botao-secundario" type="submit">Restaurar demonstração</button>
+    </form>
   </section>
+
+  {% if demonstracao_restaurada %}
+    <div class="aviso aviso-sucesso aviso-painel" role="status">
+      <strong>Demonstração restaurada.</strong>
+      <p>Os três cenários voltaram ao estado inicial.</p>
+    </div>
+  {% endif %}
 
   <section class="indicadores" aria-label="Resumo das operações">
     <article class="indicador">
@@ -72,9 +82,15 @@
               <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">
                 Ver detalhes
               </a>
-              <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">
-                Verificar e agendar
-              </a>
+              {% if agendamentos_por_operacao.get(operacao.id) %}
+                <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamentos_por_operacao[operacao.id].id) }}">
+                  Ver agendamento
+                </a>
+              {% else %}
+                <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">
+                  Verificar e agendar
+                </a>
+              {% endif %}
             </div>
           </article>
         {% endfor %}

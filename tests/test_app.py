@@ -1,13 +1,34 @@
+import shutil
+import tempfile
 import unittest
+from pathlib import Path
 
 from app import create_app
 
 
+DIRETORIO_DADOS_ORIGINAL = (
+    Path(__file__).resolve().parent.parent / "data" / "base_demo"
+)
+
+
 class PaginaInicialTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        app = create_app()
-        app.config.update(TESTING=True)
+        self.diretorio_temporario = tempfile.TemporaryDirectory()
+        self.diretorio_dados = Path(self.diretorio_temporario.name)
+        for caminho in DIRETORIO_DADOS_ORIGINAL.glob("*.json"):
+            shutil.copy2(caminho, self.diretorio_dados / caminho.name)
+
+        app = create_app(
+            {
+                "TESTING": True,
+                "DIRETORIO_DADOS": self.diretorio_dados,
+                "DIRETORIO_BASE_DEMO": DIRETORIO_DADOS_ORIGINAL,
+            }
+        )
         self.client = app.test_client()
+
+    def tearDown(self) -> None:
+        self.diretorio_temporario.cleanup()
 
     def test_pagina_inicial_abre(self) -> None:
         resposta = self.client.get("/")
@@ -71,6 +92,71 @@ class PaginaInicialTestCase(unittest.TestCase):
         )
 
         self.assertEqual(resposta.status_code, 400)
+
+    def test_confirma_agendamento_e_exibe_resultado(self) -> None:
+        resposta = self.client.post(
+            "/operacoes/OP-001/confirmar",
+            data={
+                "janela_terminal_id": "JT-001",
+                "transporte_id": "TR-001",
+            },
+            follow_redirects=True,
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Agendamento confirmado", conteudo)
+        self.assertIn("AG-001", conteudo)
+        self.assertIn("Comunicação simulada", conteudo)
+        self.assertIn("mensagem não enviada", conteudo)
+
+        painel = self.client.get("/").get_data(as_text=True)
+        self.assertIn("Agendamento confirmado", painel)
+        self.assertIn("Ver agendamento", painel)
+
+        detalhes = self.client.get("/operacoes/OP-001").get_data(as_text=True)
+        self.assertIn("Registro AG-001", detalhes)
+
+    def test_rejeita_confirmacao_repetida(self) -> None:
+        dados = {
+            "janela_terminal_id": "JT-001",
+            "transporte_id": "TR-001",
+        }
+        primeira_resposta = self.client.post(
+            "/operacoes/OP-001/confirmar",
+            data=dados,
+        )
+        segunda_resposta = self.client.post(
+            "/operacoes/OP-001/confirmar",
+            data=dados,
+        )
+
+        self.assertEqual(primeira_resposta.status_code, 303)
+        self.assertEqual(segunda_resposta.status_code, 409)
+
+    def test_restaura_os_dados_da_demonstracao(self) -> None:
+        self.client.post(
+            "/operacoes/OP-001/confirmar",
+            data={
+                "janela_terminal_id": "JT-001",
+                "transporte_id": "TR-001",
+            },
+        )
+
+        resposta = self.client.post(
+            "/demonstracao/restaurar",
+            follow_redirects=True,
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Demonstração restaurada", conteudo)
+        self.assertNotIn("Ver agendamento", conteudo)
+
+        assistente = self.client.get(
+            "/operacoes/OP-001/assistente"
+        ).get_data(as_text=True)
+        self.assertIn('method="post"', assistente)
 
     def test_operacao_inexistente_exibe_erro_compreensivel(self) -> None:
         resposta = self.client.get("/operacoes/OP-999")

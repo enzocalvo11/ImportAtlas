@@ -4,9 +4,9 @@ Protótipo desenvolvido para o Porto Hack Santos 2026. A solução organiza e au
 
 ## Situação atual
 
-O repositório possui dados simulados, motores de prontidão e recomendação de horários, painel de operações e interface visual do assistente. A confirmação ainda é apenas demonstrativa; o registro do agendamento será implementado na próxima etapa.
+O repositório possui o fluxo principal do MVP: dados simulados, verificação de prontidão, recomendação de horários, confirmação humana, registro em JSON e atualização das disponibilidades. As comunicações externas continuam sendo apenas simuladas.
 
-## Tecnologias planejadas
+## Tecnologias
 
 - Python;
 - Flask;
@@ -31,23 +31,19 @@ python app.py
 
 Acesse `http://127.0.0.1:5000` no navegador.
 
-O Flask é a única dependência externa nesta etapa. Ele fornece o servidor web, as rotas e a renderização dos arquivos HTML. Os testes usam o módulo `unittest`, incluído no Python.
+O Flask é a única dependência externa. Ele fornece o servidor web, as rotas e a renderização dos arquivos HTML. Os testes usam o módulo `unittest`, incluído no Python.
 
-Para executar o teste da página inicial:
+Para executar todos os testes:
 
 ```powershell
 python -m unittest discover -s tests
 ```
 
-## Primeira instrução para o Codex
+## Demonstração
 
-Abra o chat do Codex no VS Code e envie:
+O painel possui a ação **Restaurar demonstração**, que remove o agendamento registrado e recupera os três cenários iniciais sem edição manual dos arquivos.
 
-```text
-Leia o AGENTS.md, o README.md e todos os arquivos Markdown da pasta docs. Depois, analise o repositório e apresente um plano curto para criar somente a estrutura inicial do MVP. Não implemente funcionalidades ainda e não adicione dependências sem explicar a necessidade.
-```
-
-Depois de revisar o plano, autorize a criação da estrutura inicial. Faça um commit antes de iniciar a primeira funcionalidade.
+Consulte o roteiro completo em [`docs/ROTEIRO_DEMONSTRACAO.md`](docs/ROTEIRO_DEMONSTRACAO.md).
 
 ## Princípio do projeto
 

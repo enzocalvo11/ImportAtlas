@@ -71,6 +71,13 @@
         {% endfor %}
       </div>
     </section>
+  {% elif resultado.status == "Agendamento confirmado" %}
+    <section class="secao-assistente" aria-labelledby="titulo-ja-confirmado">
+      <div class="aviso aviso-sucesso">
+        <strong id="titulo-ja-confirmado">Esta operação já possui agendamento confirmado.</strong>
+        <p>Volte ao painel para consultar o status atualizado da operação.</p>
+      </div>
+    </section>
   {% elif not opcoes %}
     <section class="secao-assistente" aria-labelledby="titulo-sem-horario">
       <div class="aviso aviso-alerta">
@@ -141,8 +148,12 @@
         </ul>
       </div>
       <div class="barra-confirmacao">
-        <p>Nenhum agendamento será registrado nesta etapa.</p>
-        <button class="botao botao-primario" type="button" disabled>Confirmar agendamento</button>
+        <p>Confira os dados. O registro só será criado depois da sua confirmação.</p>
+        <form method="post" action="{{ url_for('confirmar_retirada', operacao_id=operacao.id) }}">
+          <input type="hidden" name="janela_terminal_id" value="{{ opcao_selecionada.janela_terminal_id }}">
+          <input type="hidden" name="transporte_id" value="{{ opcao_selecionada.transporte_id }}">
+          <button class="botao botao-primario" type="submit">Confirmar agendamento</button>
+        </form>
       </div>
     </section>
   {% endif %}

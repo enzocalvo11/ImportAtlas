@@ -9,11 +9,12 @@ from services.data_service import (
     carregar_janelas_terminal,
     carregar_operacoes,
 )
+from services.demonstracao_service import DIRETORIO_BASE_DEMO
 
 
 class DadosSimuladosTestCase(unittest.TestCase):
     def test_carrega_os_tres_cenarios_obrigatorios(self) -> None:
-        operacoes = carregar_operacoes()
+        operacoes = carregar_operacoes(DIRETORIO_BASE_DEMO)
         operacoes_por_id = {operacao["id"]: operacao for operacao in operacoes}
 
         self.assertEqual(set(operacoes_por_id), {"OP-001", "OP-002", "OP-003"})
@@ -22,8 +23,10 @@ class DadosSimuladosTestCase(unittest.TestCase):
         self.assertTrue(operacoes_por_id["OP-003"]["documentacao_concluida"])
 
     def test_carrega_disponibilidades_deterministicas(self) -> None:
-        janelas = carregar_janelas_terminal()
-        transportes = carregar_disponibilidades_transporte()
+        janelas = carregar_janelas_terminal(DIRETORIO_BASE_DEMO)
+        transportes = carregar_disponibilidades_transporte(
+            DIRETORIO_BASE_DEMO
+        )
 
         self.assertEqual(len(janelas), 5)
         self.assertEqual(len(transportes), 5)

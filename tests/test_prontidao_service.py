@@ -2,6 +2,7 @@ import unittest
 from copy import deepcopy
 
 from services.data_service import carregar_operacoes
+from services.demonstracao_service import DIRETORIO_BASE_DEMO
 from services.prontidao_service import verificar_prontidao
 
 
@@ -9,7 +10,8 @@ class ProntidaoServiceTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.operacoes = {
-            operacao["id"]: operacao for operacao in carregar_operacoes()
+            operacao["id"]: operacao
+            for operacao in carregar_operacoes(DIRETORIO_BASE_DEMO)
         }
 
     def test_operacao_pronta_pode_avancar(self) -> None:

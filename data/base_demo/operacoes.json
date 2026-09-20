@@ -1,0 +1,65 @@
+[
+  {
+    "id": "OP-001",
+    "importador": "Café Atlântico Ltda.",
+    "container": "MSCU1234567",
+    "terminal": "Santos Brasil",
+    "chegada_prevista": "2026-09-22T08:00:00-03:00",
+    "liberacao_aduaneira": true,
+    "documentacao_concluida": true,
+    "tributos_regularizados": true,
+    "liberacao_terminal": true,
+    "possui_bloqueio": false,
+    "responsaveis": {
+      "aduana": "Despachante aduaneiro",
+      "documentacao": "Despachante aduaneiro",
+      "tributos": "Importador",
+      "terminal": "Equipe operacional",
+      "bloqueio": "Equipe operacional",
+      "transporte": "Transportadora Rota Sul"
+    },
+    "status": "Pronta para agendamento"
+  },
+  {
+    "id": "OP-002",
+    "importador": "Comercial Baixada Ltda.",
+    "container": "TCLU7654321",
+    "terminal": "Ecoporto Santos",
+    "chegada_prevista": "2026-09-23T07:30:00-03:00",
+    "liberacao_aduaneira": true,
+    "documentacao_concluida": false,
+    "tributos_regularizados": true,
+    "liberacao_terminal": true,
+    "possui_bloqueio": false,
+    "responsaveis": {
+      "aduana": "Despachante aduaneiro",
+      "documentacao": "Despachante aduaneiro",
+      "tributos": "Importador",
+      "terminal": "Equipe operacional",
+      "bloqueio": "Equipe operacional",
+      "transporte": "Transportadora Litoral"
+    },
+    "status": "Com pendências"
+  },
+  {
+    "id": "OP-003",
+    "importador": "Importadora Horizonte Ltda.",
+    "container": "CMAU2468135",
+    "terminal": "BTP",
+    "chegada_prevista": "2026-09-24T06:00:00-03:00",
+    "liberacao_aduaneira": true,
+    "documentacao_concluida": true,
+    "tributos_regularizados": true,
+    "liberacao_terminal": true,
+    "possui_bloqueio": false,
+    "responsaveis": {
+      "aduana": "Despachante aduaneiro",
+      "documentacao": "Despachante aduaneiro",
+      "tributos": "Importador",
+      "terminal": "Equipe operacional",
+      "bloqueio": "Equipe operacional",
+      "transporte": "Transportadora Costa"
+    },
+    "status": "Pronta para agendamento"
+  }
+]

@@ -62,14 +62,30 @@
       <div class="titulo-painel">
         <h2 id="titulo-historico">Histórico</h2>
       </div>
-      <div class="estado-vazio estado-vazio-compacto">
-        <p>Nenhuma alteração foi registrada para esta operação.</p>
-      </div>
+      {% if agendamento %}
+        <ol class="linha-tempo">
+          <li>
+            <span class="marcador-linha-tempo" aria-hidden="true"></span>
+            <div>
+              <strong>Agendamento confirmado</strong>
+              <p>{{ agendamento.inicio|data_br }} · Registro {{ agendamento.id }}</p>
+            </div>
+          </li>
+        </ol>
+      {% else %}
+        <div class="estado-vazio estado-vazio-compacto">
+          <p>Nenhuma alteração foi registrada para esta operação.</p>
+        </div>
+      {% endif %}
     </section>
   </div>
 
   <div class="barra-acoes">
     <a class="botao botao-secundario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
-    <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">Verificar e agendar retirada</a>
+    {% if agendamento %}
+      <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamento.id) }}">Ver agendamento confirmado</a>
+    {% else %}
+      <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">Verificar e agendar retirada</a>
+    {% endif %}
   </div>
 {% endblock %}
