@@ -39,6 +39,11 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("OP-001", conteudo)
         self.assertIn("OP-002", conteudo)
         self.assertIn("OP-003", conteudo)
+        self.assertIn(
+            '<span class="status status-alerta">\n                Pronta para agendamento',
+            conteudo,
+        )
+        self.assertIn('class="indicador indicador-alerta"', conteudo)
 
     def test_abre_detalhes_da_operacao(self) -> None:
         resposta = self.client.get("/operacoes/OP-001")
@@ -47,6 +52,18 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Café Atlântico Ltda.", conteudo)
         self.assertIn("Condições registradas", conteudo)
+        self.assertIn("Tudo concluído", conteudo)
+        self.assertIn("informacao-valida", conteudo)
+        self.assertNotIn("item-pendente", conteudo)
+
+    def test_detalhes_destacam_pendencia_em_vermelho(self) -> None:
+        resposta = self.client.get("/operacoes/OP-002")
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Requer atenção", conteudo)
+        self.assertIn("Documentação concluída", conteudo)
+        self.assertIn("item-pendente", conteudo)
 
     def test_assistente_exibe_recomendacao_e_resumo_para_confirmacao(self) -> None:
         resposta = self.client.get("/operacoes/OP-001/assistente")
@@ -58,6 +75,11 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertIn("22/09/2026 às 14:00", conteudo)
         self.assertIn("Resumo para confirmação", conteudo)
         self.assertIn("Confirmar agendamento", conteudo)
+        self.assertIn("data-assistente-agendamento", conteudo)
+        self.assertIn('data-resumo-horario="inicio"', conteudo)
+        self.assertIn('data-campo-horario="transporte_id"', conteudo)
+        self.assertIn("Voltar ao painel", conteudo)
+        self.assertNotIn("Voltar aos detalhes", conteudo)
 
     def test_assistente_permite_selecionar_alternativa(self) -> None:
         resposta = self.client.get(

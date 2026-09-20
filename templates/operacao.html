@@ -18,49 +18,87 @@
     <span class="status {{ operacao.status|classe_status }}">{{ operacao.status }}</span>
   </section>
 
-  <div class="grade-detalhes">
-    <section class="painel" aria-labelledby="titulo-dados-carga">
+  <div class="fluxo-detalhes">
+    <section class="painel secao-assistente" aria-labelledby="titulo-dados-carga">
       <div class="titulo-painel">
-        <h2 id="titulo-dados-carga">Dados da carga</h2>
+        <div>
+          <p class="etapa">Visão geral</p>
+          <h2 id="titulo-dados-carga">Dados da carga</h2>
+        </div>
+        <span class="resumo-verificacao resumo-sucesso">Dados completos</span>
       </div>
-      <dl class="lista-detalhes">
-        <div><dt>Importador</dt><dd>{{ operacao.importador }}</dd></div>
-        <div><dt>Contêiner</dt><dd>{{ operacao.container }}</dd></div>
-        <div><dt>Terminal</dt><dd>{{ operacao.terminal }}</dd></div>
-        <div><dt>Chegada prevista</dt><dd>{{ operacao.chegada_prevista|data_br }}</dd></div>
+      <dl class="grade-resumo grade-informacoes">
+        <div class="{{ 'informacao-valida' if operacao.importador else 'informacao-invalida' }}">
+          <dt>Importador</dt>
+          <dd>{{ operacao.importador or "Não informado" }}</dd>
+          <small>{{ "Informação completa" if operacao.importador else "Informação incompleta" }}</small>
+        </div>
+        <div class="{{ 'informacao-valida' if operacao.container else 'informacao-invalida' }}">
+          <dt>Contêiner</dt>
+          <dd>{{ operacao.container or "Não informado" }}</dd>
+          <small>{{ "Informação completa" if operacao.container else "Informação incompleta" }}</small>
+        </div>
+        <div class="{{ 'informacao-valida' if operacao.terminal else 'informacao-invalida' }}">
+          <dt>Terminal</dt>
+          <dd>{{ operacao.terminal or "Não informado" }}</dd>
+          <small>{{ "Informação completa" if operacao.terminal else "Informação incompleta" }}</small>
+        </div>
+        <div class="{{ 'informacao-valida' if operacao.chegada_prevista else 'informacao-invalida' }}">
+          <dt>Chegada prevista</dt>
+          <dd>{{ operacao.chegada_prevista|data_br if operacao.chegada_prevista else "Não informada" }}</dd>
+          <small>{{ "Informação completa" if operacao.chegada_prevista else "Informação incompleta" }}</small>
+        </div>
       </dl>
     </section>
 
-    <section class="painel" aria-labelledby="titulo-controles">
+    <section class="painel secao-assistente" aria-labelledby="titulo-controles">
       <div class="titulo-painel">
-        <h2 id="titulo-controles">Condições registradas</h2>
+        <div>
+          <p class="etapa">Verificação de prontidão</p>
+          <h2 id="titulo-controles">Condições registradas</h2>
+        </div>
+        {% if prontidao.pronta %}
+          <span class="resumo-verificacao resumo-sucesso">Tudo concluído</span>
+        {% else %}
+          <span class="resumo-verificacao resumo-erro">Requer atenção</span>
+        {% endif %}
       </div>
-      <ul class="lista-condicoes">
-        <li><span>Liberação aduaneira</span><strong>{{ "Concluída" if operacao.liberacao_aduaneira else "Pendente" }}</strong></li>
-        <li><span>Documentação</span><strong>{{ "Concluída" if operacao.documentacao_concluida else "Pendente" }}</strong></li>
-        <li><span>Tributos e pagamentos</span><strong>{{ "Regularizados" if operacao.tributos_regularizados else "Pendentes" }}</strong></li>
-        <li><span>Liberação do terminal</span><strong>{{ "Concluída" if operacao.liberacao_terminal else "Pendente" }}</strong></li>
-        <li><span>Bloqueio impeditivo</span><strong>{{ "Identificado" if operacao.possui_bloqueio else "Nenhum" }}</strong></li>
+      <ul class="checklist">
+        {% for verificacao in prontidao.verificacoes %}
+          <li class="item-checklist {{ 'item-concluido' if verificacao.concluida else 'item-pendente' }}">
+            <span class="icone-checklist" aria-hidden="true">{{ "✓" if verificacao.concluida else "!" }}</span>
+            <span>{{ verificacao.descricao }}</span>
+            <strong>{{ "Correto" if verificacao.concluida else "Pendente" }}</strong>
+          </li>
+        {% endfor %}
       </ul>
     </section>
 
-    <section class="painel" aria-labelledby="titulo-responsaveis">
+    <section class="painel secao-assistente" aria-labelledby="titulo-responsaveis">
       <div class="titulo-painel">
-        <h2 id="titulo-responsaveis">Responsáveis</h2>
+        <div>
+          <p class="etapa">Equipe envolvida</p>
+          <h2 id="titulo-responsaveis">Responsáveis</h2>
+        </div>
+        <span class="resumo-verificacao resumo-sucesso">Dados completos</span>
       </div>
-      <dl class="lista-detalhes">
+      <dl class="grade-resumo grade-informacoes grade-responsaveis">
         {% for papel, responsavel in operacao.responsaveis.items() %}
-          <div>
+          <div class="{{ 'informacao-valida' if responsavel else 'informacao-invalida' }}">
             <dt>{{ papel|replace("_", " ")|capitalize }}</dt>
-            <dd>{{ responsavel }}</dd>
+            <dd>{{ responsavel or "Não informado" }}</dd>
+            <small>{{ "Informação completa" if responsavel else "Informação incompleta" }}</small>
           </div>
         {% endfor %}
       </dl>
     </section>
 
-    <section class="painel" aria-labelledby="titulo-historico">
+    <section class="painel secao-assistente" aria-labelledby="titulo-historico">
       <div class="titulo-painel">
-        <h2 id="titulo-historico">Histórico</h2>
+        <div>
+          <p class="etapa">Acompanhamento</p>
+          <h2 id="titulo-historico">Histórico</h2>
+        </div>
       </div>
       {% if agendamento %}
         <ol class="linha-tempo">

@@ -196,6 +196,10 @@ h3 {
   border-top-color: #cc5a5a;
 }
 
+.indicador-alerta {
+  border-top-color: #d6a52e;
+}
+
 .indicador-informativo {
   border-top-color: #307aa5;
 }
@@ -439,6 +443,57 @@ a:focus-visible {
   color: #17384f;
   font-size: 0.82rem;
   text-align: right;
+}
+
+.fluxo-detalhes {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.fluxo-detalhes .secao-assistente + .secao-assistente {
+  margin-top: 0;
+}
+
+.grade-informacoes {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grade-responsaveis {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grade-informacoes > div {
+  border: 1px solid transparent;
+  border-left-width: 4px;
+}
+
+.grade-informacoes small {
+  display: block;
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.grade-informacoes .informacao-valida {
+  border-color: #b9dfce;
+  color: #176347;
+  background: #eef9f4;
+}
+
+.grade-informacoes .informacao-valida dd,
+.grade-informacoes .informacao-valida small {
+  color: #176347;
+}
+
+.grade-informacoes .informacao-invalida {
+  border-color: #f1c5c5;
+  color: #9d3434;
+  background: #fff4f4;
+}
+
+.grade-informacoes .informacao-invalida dd,
+.grade-informacoes .informacao-invalida small {
+  color: #9d3434;
 }
 
 .estado-vazio {
@@ -706,6 +761,13 @@ a:focus-visible {
   box-shadow: 0 0 0 2px rgb(8 126 139 / 12%), 0 8px 24px rgb(24 54 75 / 7%);
 }
 
+.seletor-horario[aria-current="true"] {
+  border-color: #b9dfce;
+  color: #176347;
+  background: #eef9f4;
+  cursor: default;
+}
+
 .cartao-horario-topo {
   display: flex;
   min-height: 28px;
@@ -892,7 +954,9 @@ a:focus-visible {
 
   .grade-horarios,
   .grade-resumo,
-  .resumo-final {
+  .resumo-final,
+  .grade-informacoes,
+  .grade-responsaveis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -933,6 +997,8 @@ a:focus-visible {
   .grade-horarios,
   .grade-resumo,
   .resumo-final,
+  .grade-informacoes,
+  .grade-responsaveis,
   .lista-comunicacoes {
     grid-template-columns: 1fr;
   }
