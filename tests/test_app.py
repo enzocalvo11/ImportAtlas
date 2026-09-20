@@ -362,6 +362,11 @@ class PaginaInicialTestCase(unittest.TestCase):
         )
         self.assertIn("Horários compatíveis", conteudo_reagendamento)
         self.assertIn("Pronta para agendamento", conteudo_reagendamento)
+        # JT-001/TR-001 (22/09/2026 às 14:00) foi recusado e não pode
+        # voltar a ser oferecido para esta operação.
+        self.assertIn("2 opções encontradas", conteudo_reagendamento)
+        self.assertNotIn("22/09/2026 às 14:00", conteudo_reagendamento)
+        self.assertIn("22/09/2026 às 17:00", conteudo_reagendamento)
 
     def test_assistente_recarrega_solicitacao_pendente(self) -> None:
         self.client.post(

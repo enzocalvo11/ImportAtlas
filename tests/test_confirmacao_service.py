@@ -149,8 +149,8 @@ class ConfirmacaoServiceTestCase(unittest.TestCase):
         preparar_reagendamento("AG-001", self.diretorio_dados)
         nova_solicitacao = solicitar_agendamento(
             "OP-001",
-            "JT-001",
-            "TR-001",
+            "JT-002",
+            "TR-002",
             self.diretorio_dados,
         )
         agendamentos = carregar_agendamentos(self.diretorio_dados)
@@ -165,6 +165,27 @@ class ConfirmacaoServiceTestCase(unittest.TestCase):
             agendamentos[1]["status"],
             "Aguardando confirmação do terminal",
         )
+
+    def test_nao_reoferece_combinacao_ja_recusada_no_reagendamento(self) -> None:
+        solicitacao = solicitar_agendamento(
+            "OP-001",
+            "JT-001",
+            "TR-001",
+            self.diretorio_dados,
+        )
+        recusar_agendamento(
+            solicitacao["agendamento"]["id"],
+            self.diretorio_dados,
+        )
+        preparar_reagendamento("AG-001", self.diretorio_dados)
+
+        with self.assertRaisesRegex(ErroConfirmacao, "não está mais disponível"):
+            solicitar_agendamento(
+                "OP-001",
+                "JT-001",
+                "TR-001",
+                self.diretorio_dados,
+            )
 
     def test_impede_solicitacao_de_operacao_com_pendencia(self) -> None:
         with self.assertRaisesRegex(ErroConfirmacao, "pendências impeditivas"):
