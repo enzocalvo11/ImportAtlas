@@ -51,6 +51,9 @@ if (gradeHorarios) {
     if (!seletor) {
       return;
     }
+    if (!campoJanela || !campoTransporte) {
+      return;
+    }
 
     evento.preventDefault();
     selecionarHorario(seletor.closest("[data-opcao-horario]"));

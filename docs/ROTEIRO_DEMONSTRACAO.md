@@ -12,8 +12,12 @@
 2. Mostre a checklist concluída.
 3. Destaque o primeiro horário recomendado e as duas alternativas.
 4. Selecione uma opção e confira o resumo.
-5. Clique em **Confirmar agendamento**.
-6. Mostre o registro criado, a comunicação simulada e o novo status no painel.
+5. Clique em **Solicitar agendamento**.
+6. Mostre o registro com o status **Aguardando confirmação do terminal**.
+7. Na página **Resposta do terminal**, clique em **Confirmar horário**.
+8. Mostre a confirmação, a comunicação simulada e o novo status no painel.
+
+Para demonstrar a resposta negativa, restaure a demonstração, repita a solicitação e clique em **Recusar horário** na mesma página.
 
 Mensagem principal: o sistema cruza as disponibilidades, recomenda a primeira opção viável e mantém a decisão final com o usuário.
 
@@ -21,7 +25,7 @@ Mensagem principal: o sistema cruza as disponibilidades, recomenda a primeira op
 
 1. Na operação `OP-002`, clique em **Verificar e agendar**.
 2. Mostre a documentação pendente, o motivo, o responsável e a próxima ação.
-3. Destaque que nenhum horário e nenhum botão de confirmação são exibidos.
+3. Destaque que nenhum horário e nenhum botão de solicitação são exibidos.
 
 Mensagem principal: uma carga com pendência impeditiva nunca pode ser agendada.
 

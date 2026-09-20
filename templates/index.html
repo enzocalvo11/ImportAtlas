@@ -99,7 +99,7 @@
                 </a>
                 {% if agendamentos_por_operacao.get(operacao.id) %}
                   <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamentos_por_operacao[operacao.id].id) }}">
-                    Ver agendamento
+                    {{ "Ver agendamento" if agendamentos_por_operacao[operacao.id].status == "Agendamento confirmado" else "Ver resposta do terminal" if agendamentos_por_operacao[operacao.id].status == "Agendamento recusado pelo terminal" else "Acompanhar solicitação" }}
                   </a>
                 {% else %}
                   <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">

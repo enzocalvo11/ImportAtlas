@@ -3,7 +3,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from services.confirmacao_service import ErroConfirmacao, confirmar_agendamento
+from services.confirmacao_service import (
+    ErroConfirmacao,
+    confirmar_agendamento,
+    recusar_agendamento,
+    solicitar_agendamento,
+)
 from services.data_service import (
     carregar_agendamentos,
     carregar_disponibilidades_transporte,
@@ -27,8 +32,8 @@ class ConfirmacaoServiceTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         self.diretorio_temporario.cleanup()
 
-    def test_confirma_e_atualiza_todos_os_registros(self) -> None:
-        resultado = confirmar_agendamento(
+    def test_solicita_e_atualiza_todos_os_registros(self) -> None:
+        resultado = solicitar_agendamento(
             "OP-001",
             "JT-001",
             "TR-001",
@@ -43,14 +48,77 @@ class ConfirmacaoServiceTestCase(unittest.TestCase):
         agendamentos = carregar_agendamentos(self.diretorio_dados)
 
         self.assertEqual(resultado["agendamento"]["id"], "AG-001")
-        self.assertEqual(operacao["status"], "Agendamento confirmado")
+        self.assertEqual(
+            operacao["status"],
+            "Aguardando confirmação do terminal",
+        )
         self.assertFalse(janela["disponivel"])
         self.assertFalse(transporte["disponivel"])
         self.assertEqual(len(agendamentos), 1)
         self.assertEqual(agendamentos[0]["operacao_id"], "OP-001")
+        self.assertEqual(
+            agendamentos[0]["status"],
+            "Aguardando confirmação do terminal",
+        )
+        self.assertIsNone(agendamentos[0]["confirmado_em"])
 
-    def test_impede_nova_confirmacao_da_mesma_operacao(self) -> None:
-        confirmar_agendamento(
+    def test_confirma_solicitacao_apos_resposta_do_terminal(self) -> None:
+        solicitacao = solicitar_agendamento(
+            "OP-001",
+            "JT-001",
+            "TR-001",
+            self.diretorio_dados,
+        )
+        resultado = confirmar_agendamento(
+            solicitacao["agendamento"]["id"],
+            self.diretorio_dados,
+        )
+
+        operacao = carregar_operacoes(self.diretorio_dados)[0]
+        agendamento = carregar_agendamentos(self.diretorio_dados)[0]
+
+        self.assertEqual(resultado["agendamento"]["id"], "AG-001")
+        self.assertEqual(operacao["status"], "Agendamento confirmado")
+        self.assertEqual(agendamento["status"], "Agendamento confirmado")
+        self.assertIsNotNone(agendamento["confirmado_em"])
+
+    def test_recusa_solicitacao_e_libera_recursos(self) -> None:
+        solicitacao = solicitar_agendamento(
+            "OP-001",
+            "JT-001",
+            "TR-001",
+            self.diretorio_dados,
+        )
+        resultado = recusar_agendamento(
+            solicitacao["agendamento"]["id"],
+            self.diretorio_dados,
+        )
+
+        operacao = carregar_operacoes(self.diretorio_dados)[0]
+        janela = carregar_janelas_terminal(self.diretorio_dados)[0]
+        transporte = carregar_disponibilidades_transporte(
+            self.diretorio_dados
+        )[0]
+        agendamento = carregar_agendamentos(self.diretorio_dados)[0]
+
+        self.assertEqual(
+            resultado["agendamento"]["status"],
+            "Agendamento recusado pelo terminal",
+        )
+        self.assertEqual(
+            operacao["status"],
+            "Agendamento recusado pelo terminal",
+        )
+        self.assertEqual(
+            agendamento["status"],
+            "Agendamento recusado pelo terminal",
+        )
+        self.assertIsNone(agendamento["confirmado_em"])
+        self.assertTrue(janela["disponivel"])
+        self.assertTrue(transporte["disponivel"])
+
+    def test_impede_nova_solicitacao_da_mesma_operacao(self) -> None:
+        solicitar_agendamento(
             "OP-001",
             "JT-001",
             "TR-001",
@@ -58,16 +126,16 @@ class ConfirmacaoServiceTestCase(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(ErroConfirmacao, "já possui"):
-            confirmar_agendamento(
+            solicitar_agendamento(
                 "OP-001",
                 "JT-001",
                 "TR-001",
                 self.diretorio_dados,
             )
 
-    def test_impede_confirmacao_de_operacao_com_pendencia(self) -> None:
+    def test_impede_solicitacao_de_operacao_com_pendencia(self) -> None:
         with self.assertRaisesRegex(ErroConfirmacao, "pendências impeditivas"):
-            confirmar_agendamento(
+            solicitar_agendamento(
                 "OP-002",
                 "JT-004",
                 "TR-004",

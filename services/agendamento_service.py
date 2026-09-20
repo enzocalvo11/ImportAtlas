@@ -5,8 +5,9 @@ from services.prontidao_service import verificar_prontidao
 
 
 STATUS_SEM_HORARIO = "Sem horário compatível"
-STATUS_AGUARDANDO_CONFIRMACAO = "Aguardando confirmação"
+STATUS_AGUARDANDO_TERMINAL = "Aguardando confirmação do terminal"
 STATUS_CONFIRMADO = "Agendamento confirmado"
+STATUS_RECUSADO = "Agendamento recusado pelo terminal"
 DURACAO_PADRAO_MINUTOS = 60
 
 
@@ -21,11 +22,17 @@ def buscar_horarios_compativeis(
         raise ValueError("A duração do atendimento deve ser maior que zero.")
 
     prontidao = verificar_prontidao(operacao)
-    if operacao["status"] == STATUS_CONFIRMADO:
+    if operacao["status"] in {
+        STATUS_AGUARDANDO_TERMINAL,
+        STATUS_CONFIRMADO,
+        STATUS_RECUSADO,
+    }:
         return {
             "operacao_id": operacao["id"],
-            "status": STATUS_CONFIRMADO,
-            "mensagem": "Esta operação já possui agendamento confirmado.",
+            "status": operacao["status"],
+            "mensagem": (
+                "Esta operação já possui uma solicitação de agendamento."
+            ),
             "recomendacao": None,
             "alternativas": [],
             "total_opcoes": 0,
@@ -69,7 +76,7 @@ def buscar_horarios_compativeis(
 
     return {
         "operacao_id": operacao["id"],
-        "status": STATUS_AGUARDANDO_CONFIRMACAO,
+        "status": prontidao["status"],
         "mensagem": (
             "A recomendação é a primeira compatibilidade disponível entre "
             "o terminal e o transporte."

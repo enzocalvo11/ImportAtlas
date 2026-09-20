@@ -162,10 +162,9 @@
         <div class="titulo-painel">
           <div>
             <p class="etapa">Etapa 3</p>
-            <h2 id="titulo-confirmacao">Resumo para confirmação</h2>
+            <h2 id="titulo-confirmacao">Resumo da solicitação</h2>
           </div>
         </div>
-      </div>
       <dl class="grade-resumo">
         <div><dt>Operação</dt><dd>{{ operacao.id }}</dd></div>
         <div><dt>Carga</dt><dd>{{ operacao.container }}</dd></div>
@@ -181,14 +180,15 @@
         </ul>
       </div>
       <div class="barra-confirmacao">
-        <p>Confira os dados. O registro só será criado depois da sua confirmação.</p>
+        <p>Confira os dados. O terminal ainda precisará confirmar o horário solicitado.</p>
         <form method="post" action="{{ url_for('confirmar_retirada', operacao_id=operacao.id) }}">
           <input type="hidden" name="janela_terminal_id" value="{{ opcao_selecionada.janela_terminal_id }}" data-campo-horario="janela_terminal_id">
           <input type="hidden" name="transporte_id" value="{{ opcao_selecionada.transporte_id }}" data-campo-horario="transporte_id">
-          <button class="botao botao-primario" type="submit">Confirmar agendamento</button>
+          <button class="botao botao-primario" type="submit">Solicitar agendamento</button>
         </form>
       </div>
     </section>
+  {% endif %}
   {% endif %}
 
   <div class="barra-acoes barra-acoes-assistente">

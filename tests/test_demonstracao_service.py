@@ -3,7 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from services.confirmacao_service import confirmar_agendamento
+from services.confirmacao_service import (
+    confirmar_agendamento,
+    solicitar_agendamento,
+)
 from services.data_service import (
     carregar_agendamentos,
     carregar_disponibilidades_transporte,
@@ -23,10 +26,14 @@ class DemonstracaoServiceTestCase(unittest.TestCase):
             for caminho in DIRETORIO_BASE_DEMO.glob("*.json"):
                 shutil.copy2(caminho, diretorio_dados / caminho.name)
 
-            confirmar_agendamento(
+            solicitacao = solicitar_agendamento(
                 "OP-001",
                 "JT-001",
                 "TR-001",
+                diretorio_dados,
+            )
+            confirmar_agendamento(
+                solicitacao["agendamento"]["id"],
                 diretorio_dados,
             )
             restaurar_dados_demonstracao(

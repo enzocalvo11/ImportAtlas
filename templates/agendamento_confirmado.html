@@ -1,51 +1,71 @@
 {% extends "base.html" %}
 
-{% block title %}Agendamento confirmado — {{ operacao.id }} — ImportAtlas{% endblock %}
+{% set confirmado = agendamento.status == "Agendamento confirmado" %}
+{% set recusado = agendamento.status == "Agendamento recusado pelo terminal" %}
+
+{% block title %}{{ agendamento.status }} — {{ operacao.id }} — ImportAtlas{% endblock %}
 
 {% block content %}
-  <nav class="navegacao-contextual" aria-label="Navegação estrutural">
-    <a href="{{ url_for('painel_operacoes') }}">Painel de operações</a>
-    <span aria-hidden="true">/</span>
-    <a href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">{{ operacao.id }}</a>
-    <span aria-hidden="true">/</span>
-    <span>Agendamento confirmado</span>
-  </nav>
+  <section class="pagina-terminal" aria-labelledby="titulo-terminal">
+    <header class="cabecalho-terminal">
+      <div>
+        <p class="identificacao">Simulação do terminal</p>
+        <h1 id="titulo-terminal">Resposta do terminal</h1>
+        <p class="descricao-pagina">Solicitação {{ agendamento.id }} · Operação {{ operacao.id }}</p>
+      </div>
+      <span class="status {{ agendamento.status|classe_status }}">{{ agendamento.status }}</span>
+    </header>
 
-  <section class="painel confirmacao-concluida" aria-labelledby="titulo-confirmado">
-    <div class="icone-confirmacao" aria-hidden="true">✓</div>
-    <p class="identificacao">Registro concluído</p>
-    <h1 id="titulo-confirmado">Agendamento confirmado</h1>
-    <p class="descricao-pagina">
-      A retirada da operação {{ operacao.id }} foi registrada com sucesso.
-    </p>
+    <section class="painel cartao-terminal {{ 'cartao-terminal-confirmado' if confirmado else 'cartao-terminal-recusado' if recusado else '' }}">
+      <div class="estado-terminal">
+        <span class="icone-terminal" aria-hidden="true">{{ "✓" if confirmado else "×" if recusado else "…" }}</span>
+        <div>
+          <h2>{{ "Horário confirmado" if confirmado else "Horário recusado" if recusado else "Confirmação pendente" }}</h2>
+          <p>
+            {{ "O terminal confirmou o horário solicitado." if confirmado else "O terminal não aceitou o horário solicitado." if recusado else "Confira os dados e responda à solicitação para concluir a simulação." }}
+          </p>
+        </div>
+      </div>
 
-    <dl class="grade-resumo resumo-final">
-      <div><dt>Agendamento</dt><dd>{{ agendamento.id }}</dd></div>
-      <div><dt>Operação</dt><dd>{{ operacao.id }}</dd></div>
-      <div><dt>Carga</dt><dd>{{ operacao.container }}</dd></div>
-      <div><dt>Terminal</dt><dd>{{ operacao.terminal }}</dd></div>
-      <div><dt>Data e horário</dt><dd>{{ agendamento.inicio|data_br }}</dd></div>
-      <div><dt>Transportadora</dt><dd>{{ transporte.transportadora }}</dd></div>
-      <div><dt>Veículo</dt><dd>{{ transporte.veiculo }}</dd></div>
-      <div><dt>Status</dt><dd>{{ agendamento.status }}</dd></div>
-    </dl>
+      <dl class="grade-resumo resumo-terminal">
+        <div><dt>Operação e carga</dt><dd>{{ operacao.id }} · {{ operacao.container }}</dd></div>
+        <div><dt>Terminal</dt><dd>{{ operacao.terminal }}</dd></div>
+        <div><dt>Data e horário</dt><dd>{{ agendamento.inicio|data_br }}</dd></div>
+        <div><dt>Transporte</dt><dd>{{ transporte.transportadora }} · {{ transporte.veiculo }}</dd></div>
+      </dl>
 
-    <section class="comunicacao-simulada comunicacao-final" aria-labelledby="titulo-comunicacoes">
-      <strong id="titulo-comunicacoes">Comunicação simulada</strong>
-      <p>Nenhuma mensagem real foi enviada. Em uma integração futura, estes participantes seriam comunicados:</p>
-      <ul class="lista-comunicacoes">
-        {% for comunicacao in comunicacoes %}
-          <li>
-            <span>{{ comunicacao.destinatario }}</span>
-            <small>{{ comunicacao.status }}</small>
-          </li>
-        {% endfor %}
-      </ul>
+      {% if confirmado %}
+        <div class="resultado-terminal" role="status">
+          <strong>Agendamento confirmado.</strong>
+          <p>O painel e o histórico da operação já foram atualizados.</p>
+        </div>
+      {% elif recusado %}
+        <div class="resultado-terminal resultado-terminal-recusado" role="status">
+          <strong>Agendamento recusado.</strong>
+          <p>A janela e o transporte reservados foram liberados.</p>
+        </div>
+      {% else %}
+        <div class="acao-terminal">
+          <p>Escolha a resposta simulada do terminal.</p>
+          <div class="acoes-resposta-terminal">
+            <form method="post" action="{{ url_for('simular_confirmacao_terminal', agendamento_id=agendamento.id) }}">
+              <button class="botao botao-primario" type="submit">Confirmar horário</button>
+            </form>
+            <form method="post" action="{{ url_for('simular_recusa_terminal', agendamento_id=agendamento.id) }}">
+              <button class="botao botao-perigo" type="submit">Recusar horário</button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+
+      <p class="nota-terminal">
+        Simulação: nenhuma integração ou mensagem real foi executada.
+        {% if confirmado or recusado %}Participantes que seriam comunicados: {{ comunicacoes|map(attribute='destinatario')|join(', ') }}.{% endif %}
+      </p>
+
+      <div class="barra-acoes acoes-terminal">
+        <a class="botao botao-secundario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
+      </div>
     </section>
-
-    <div class="barra-acoes barra-acoes-confirmacao">
-      <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">Ver operação</a>
-      <a class="botao botao-primario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
-    </div>
   </section>
 {% endblock %}

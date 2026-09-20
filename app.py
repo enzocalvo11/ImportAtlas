@@ -11,7 +11,12 @@ from services.atualizacao_externa_service import (
     ErroAtualizacaoExterna,
     simular_atualizacao_externa,
 )
-from services.confirmacao_service import ErroConfirmacao, confirmar_agendamento
+from services.confirmacao_service import (
+    ErroConfirmacao,
+    confirmar_agendamento,
+    recusar_agendamento,
+    solicitar_agendamento,
+)
 from services.data_service import (
     DIRETORIO_DADOS,
     ErroDados,
@@ -33,7 +38,9 @@ CLASSES_STATUS = {
     "Pronta para agendamento": "status-alerta",
     "Sem horário compatível": "status-alerta",
     "Aguardando confirmação": "status-informativo",
+    "Aguardando confirmação do terminal": "status-informativo",
     "Agendamento confirmado": "status-sucesso",
+    "Agendamento recusado pelo terminal": "status-erro",
 }
 
 
@@ -126,9 +133,17 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
         )
 
     @app.get("/operacoes/<operacao_id>/assistente")
-    def iniciar_assistente(operacao_id: str) -> str:
+    def iniciar_assistente(operacao_id: str) -> Any:
         diretorio_dados = _diretorio_dados(app)
         operacao = _buscar_operacao(operacao_id, diretorio_dados)
+        agendamento = _buscar_agendamento_operacao(operacao_id, diretorio_dados)
+        if agendamento is not None:
+            return redirect(
+                url_for(
+                    "exibir_agendamento_confirmado",
+                    agendamento_id=agendamento["id"],
+                )
+            )
         resultado = buscar_horarios_compativeis(
             operacao,
             carregar_janelas_terminal(diretorio_dados),
@@ -187,10 +202,10 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
         janela_terminal_id = request.form.get("janela_terminal_id", "")
         transporte_id = request.form.get("transporte_id", "")
         if not janela_terminal_id or not transporte_id:
-            abort(400, description="Selecione um horário antes de confirmar.")
+            abort(400, description="Selecione um horário antes de solicitar.")
 
         try:
-            resultado = confirmar_agendamento(
+            resultado = solicitar_agendamento(
                 operacao_id,
                 janela_terminal_id,
                 transporte_id,
@@ -204,6 +219,42 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             url_for(
                 "exibir_agendamento_confirmado",
                 agendamento_id=resultado["agendamento"]["id"],
+            ),
+            code=303,
+        )
+
+    @app.post("/agendamentos/<agendamento_id>/confirmar")
+    def simular_confirmacao_terminal(agendamento_id: str) -> Any:
+        try:
+            confirmar_agendamento(
+                agendamento_id,
+                _diretorio_dados(app),
+            )
+        except ErroConfirmacao as erro:
+            abort(409, description=str(erro))
+
+        return redirect(
+            url_for(
+                "exibir_agendamento_confirmado",
+                agendamento_id=agendamento_id,
+            ),
+            code=303,
+        )
+
+    @app.post("/agendamentos/<agendamento_id>/recusar")
+    def simular_recusa_terminal(agendamento_id: str) -> Any:
+        try:
+            recusar_agendamento(
+                agendamento_id,
+                _diretorio_dados(app),
+            )
+        except ErroConfirmacao as erro:
+            abort(409, description=str(erro))
+
+        return redirect(
+            url_for(
+                "exibir_agendamento_confirmado",
+                agendamento_id=agendamento_id,
             ),
             code=303,
         )
@@ -336,6 +387,20 @@ def _buscar_registro(
 ) -> dict[str, Any] | None:
     return next(
         (registro for registro in registros if registro["id"] == identificador),
+        None,
+    )
+
+
+def _buscar_agendamento_operacao(
+    operacao_id: str,
+    diretorio_dados: Path,
+) -> dict[str, Any] | None:
+    return next(
+        (
+            item
+            for item in carregar_agendamentos(diretorio_dados)
+            if item["operacao_id"] == operacao_id
+        ),
         None,
     )
 
