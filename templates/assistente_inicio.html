@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Assistente — {{ operacao.id }} — ImportAtlas{% endblock %}
+
+{% block content %}
+  <nav class="navegacao-contextual" aria-label="Navegação estrutural">
+    <a href="{{ url_for('painel_operacoes') }}">Painel de operações</a>
+    <span aria-hidden="true">/</span>
+    <a href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">{{ operacao.id }}</a>
+    <span aria-hidden="true">/</span>
+    <span>Assistente</span>
+  </nav>
+
+  <section class="cabecalho-detalhes">
+    <div>
+      <p class="identificacao">Assistente de agendamento</p>
+      <h1>{{ operacao.id }}</h1>
+      <p class="descricao-pagina">
+        {{ operacao.container }} · {{ operacao.terminal }} · {{ operacao.importador }}
+      </p>
+    </div>
+    <span class="status {{ resultado.status|classe_status }}">{{ resultado.status }}</span>
+  </section>
+
+  <section class="painel secao-assistente" aria-labelledby="titulo-prontidao">
+    <div class="titulo-painel">
+      <div>
+        <p class="etapa">Etapa 1</p>
+        <h2 id="titulo-prontidao">Verificação de prontidão</h2>
+      </div>
+      {% if resultado.pendencias %}
+        <span class="resumo-verificacao resumo-erro">Requer atenção</span>
+      {% else %}
+        <span class="resumo-verificacao resumo-sucesso">Tudo concluído</span>
+      {% endif %}
+    </div>
+
+    <ul class="checklist">
+      {% for verificacao in resultado.verificacoes %}
+        <li class="item-checklist {{ 'item-concluido' if verificacao.concluida else 'item-pendente' }}">
+          <span class="icone-checklist" aria-hidden="true">{{ "✓" if verificacao.concluida else "!" }}</span>
+          <span>{{ verificacao.descricao }}</span>
+          <strong>{{ "Concluído" if verificacao.concluida else "Pendente" }}</strong>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% if resultado.pendencias %}
+    <section class="secao-assistente" aria-labelledby="titulo-pendencias">
+      <div class="aviso aviso-erro">
+        <strong>O agendamento ainda não pode ser realizado.</strong>
+        <p>Resolva as pendências abaixo antes de buscar horários.</p>
+      </div>
+      <div class="titulo-secao titulo-secao-assistente">
+        <div>
+          <p class="etapa">Fluxo interrompido</p>
+          <h2 id="titulo-pendencias">Pendências impeditivas</h2>
+        </div>
+      </div>
+      <div class="grade-pendencias">
+        {% for pendencia in resultado.pendencias %}
+          <article class="cartao-pendencia">
+            <h3>{{ pendencia.descricao }}</h3>
+            <p>{{ pendencia.motivo }}</p>
+            <dl>
+              <div><dt>Responsável</dt><dd>{{ pendencia.responsavel }}</dd></div>
+              <div><dt>Próxima ação</dt><dd>{{ pendencia.proxima_acao }}</dd></div>
+            </dl>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% elif not opcoes %}
+    <section class="secao-assistente" aria-labelledby="titulo-sem-horario">
+      <div class="aviso aviso-alerta">
+        <strong id="titulo-sem-horario">Nenhum horário compatível foi encontrado.</strong>
+        <p>{{ resultado.mensagem }}</p>
+        <p>Atualize as janelas do terminal ou a disponibilidade do transporte e tente novamente.</p>
+      </div>
+    </section>
+  {% else %}
+    <section class="secao-assistente" aria-labelledby="titulo-horarios">
+      <div class="titulo-secao titulo-secao-assistente">
+        <div>
+          <p class="etapa">Etapa 2</p>
+          <h2 id="titulo-horarios">Horários compatíveis</h2>
+          <p class="descricao-secao">{{ resultado.mensagem }}</p>
+        </div>
+        <span class="quantidade">{{ resultado.total_opcoes }} opções encontradas</span>
+      </div>
+
+      <div class="grade-horarios">
+        {% for opcao in opcoes %}
+          <article class="cartao-horario {{ 'cartao-recomendado' if opcao.recomendada else '' }} {{ 'cartao-selecionado' if opcao.chave == opcao_selecionada.chave else '' }}">
+            <div class="cartao-horario-topo">
+              {% if opcao.recomendada %}
+                <span class="rotulo-recomendacao">Recomendado</span>
+              {% else %}
+                <span class="rotulo-alternativa">Alternativa {{ loop.index - 1 }}</span>
+              {% endif %}
+              {% if opcao.chave == opcao_selecionada.chave %}
+                <span class="rotulo-selecionado">Selecionado</span>
+              {% endif %}
+            </div>
+            <p class="horario-principal">{{ opcao.inicio|data_br }}</p>
+            <p class="duracao-horario">Até {{ opcao.fim|data_br }}</p>
+            <dl class="dados-horario">
+              <div><dt>Transportadora</dt><dd>{{ opcao.transportadora }}</dd></div>
+              <div><dt>Veículo</dt><dd>{{ opcao.veiculo }}</dd></div>
+            </dl>
+            {% if opcao.chave != opcao_selecionada.chave %}
+              <a class="botao botao-secundario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id, opcao=opcao.chave) }}">
+                Selecionar este horário
+              </a>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="painel secao-assistente resumo-confirmacao" aria-labelledby="titulo-confirmacao">
+      <div class="titulo-painel">
+        <div>
+          <p class="etapa">Etapa 3</p>
+          <h2 id="titulo-confirmacao">Resumo para confirmação</h2>
+        </div>
+      </div>
+      <dl class="grade-resumo">
+        <div><dt>Operação</dt><dd>{{ operacao.id }}</dd></div>
+        <div><dt>Carga</dt><dd>{{ operacao.container }}</dd></div>
+        <div><dt>Terminal</dt><dd>{{ opcao_selecionada.terminal }}</dd></div>
+        <div><dt>Data e horário</dt><dd>{{ opcao_selecionada.inicio|data_br }}</dd></div>
+        <div><dt>Transportadora</dt><dd>{{ opcao_selecionada.transportadora }}</dd></div>
+        <div><dt>Veículo</dt><dd>{{ opcao_selecionada.veiculo }}</dd></div>
+      </dl>
+      <div class="comunicacao-simulada">
+        <strong>Participantes que seriam comunicados</strong>
+        <ul>
+          {% for participante in participantes %}<li>{{ participante }}</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="barra-confirmacao">
+        <p>Nenhum agendamento será registrado nesta etapa.</p>
+        <button class="botao botao-primario" type="button" disabled>Confirmar agendamento</button>
+      </div>
+    </section>
+  {% endif %}
+
+  <div class="barra-acoes barra-acoes-assistente">
+    <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">Voltar aos detalhes</a>
+  </div>
+{% endblock %}

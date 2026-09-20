@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} — ImportAtlas{% endblock %}
+
+{% block content %}
+  <section class="painel painel-centralizado pagina-erro">
+    <p class="identificacao">Não foi possível continuar</p>
+    <h1>{{ titulo }}</h1>
+    <p class="descricao-pagina">{{ mensagem }}</p>
+    <a class="botao botao-primario" href="{{ url_for('painel_operacoes') }}">Voltar ao painel</a>
+  </section>
+{% endblock %}

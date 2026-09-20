@@ -4,7 +4,7 @@ Protótipo desenvolvido para o Porto Hack Santos 2026. A solução organiza e au
 
 ## Situação atual
 
-O repositório possui a estrutura inicial executável do MVP. As regras de prontidão, os dados simulados e o fluxo de agendamento ainda não foram implementados.
+O repositório possui dados simulados, motores de prontidão e recomendação de horários, painel de operações e interface visual do assistente. A confirmação ainda é apenas demonstrativa; o registro do agendamento será implementado na próxima etapa.
 
 ## Tecnologias planejadas
 

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "TR-001",
+    "operacao_id": "OP-001",
+    "transportadora": "Transportadora Rota Sul",
+    "veiculo": "ABC1D23",
+    "inicio": "2026-09-22T13:30:00-03:00",
+    "fim": "2026-09-22T16:00:00-03:00",
+    "disponivel": true
+  },
+  {
+    "id": "TR-002",
+    "operacao_id": "OP-001",
+    "transportadora": "Transportadora Rota Sul",
+    "veiculo": "EFG4H56",
+    "inicio": "2026-09-22T17:00:00-03:00",
+    "fim": "2026-09-22T19:00:00-03:00",
+    "disponivel": true
+  },
+  {
+    "id": "TR-003",
+    "operacao_id": "OP-001",
+    "transportadora": "Transportadora Rota Sul",
+    "veiculo": "IJK7L89",
+    "inicio": "2026-09-23T09:30:00-03:00",
+    "fim": "2026-09-23T11:30:00-03:00",
+    "disponivel": true
+  },
+  {
+    "id": "TR-004",
+    "operacao_id": "OP-002",
+    "transportadora": "Transportadora Litoral",
+    "veiculo": "MNO1P23",
+    "inicio": "2026-09-23T13:00:00-03:00",
+    "fim": "2026-09-23T15:00:00-03:00",
+    "disponivel": true
+  },
+  {
+    "id": "TR-005",
+    "operacao_id": "OP-003",
+    "transportadora": "Transportadora Costa",
+    "veiculo": "QRS4T56",
+    "inicio": "2026-09-24T10:00:00-03:00",
+    "fim": "2026-09-24T12:00:00-03:00",
+    "disponivel": true
+  }
+]
