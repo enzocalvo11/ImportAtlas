@@ -30,20 +30,83 @@ class PaginaInicialTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         self.diretorio_temporario.cleanup()
 
-    def test_pagina_inicial_abre(self) -> None:
+    def test_pagina_inicial_aguarda_recebimento_das_operacoes(self) -> None:
         resposta = self.client.get("/")
         conteudo = resposta.get_data(as_text=True)
 
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Painel de operações", conteudo)
+        self.assertIn("Simular recebimento das operações", conteudo)
+        self.assertNotIn("OP-001", conteudo)
+        self.assertNotIn("OP-002", conteudo)
+        self.assertNotIn("OP-003", conteudo)
+
+    def test_simula_recebimento_e_exibe_operacoes_com_status(self) -> None:
+        resposta = self.client.post(
+            "/operacoes/simular-recebimento",
+            follow_redirects=True,
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Recebimento simulado com sucesso", conteudo)
         self.assertIn("OP-001", conteudo)
         self.assertIn("OP-002", conteudo)
         self.assertIn("OP-003", conteudo)
-        self.assertIn(
-            '<span class="status status-alerta">\n                Pronta para agendamento',
-            conteudo,
-        )
+        self.assertIn('<span class="status status-alerta">', conteudo)
+        self.assertIn("Pronta para agendamento", conteudo)
+        self.assertIn("Com pendências", conteudo)
         self.assertIn('class="indicador indicador-alerta"', conteudo)
+
+        novo_acesso = self.client.get("/").get_data(as_text=True)
+        self.assertIn("OP-001", novo_acesso)
+
+    def test_atualizacao_externa_conclui_pendencia_e_atualiza_painel(self) -> None:
+        self.client.post("/operacoes/simular-recebimento")
+        painel_antes = self.client.get("/").get_data(as_text=True)
+
+        self.assertNotIn("Simular atualização externa", painel_antes)
+
+        resposta = self.client.post(
+            "/operacoes/OP-002/simular-atualizacao-externa",
+            data={"origem": "detalhes"},
+            follow_redirects=True,
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("Atualização externa simulada com sucesso", conteudo)
+        self.assertNotIn("Simular atualização externa", conteudo)
+
+        painel_atualizado = self.client.get("/").get_data(as_text=True)
+        self.assertEqual(
+            painel_atualizado.count("Pronta para agendamento"),
+            3,
+        )
+
+    def test_botao_de_atualizacao_aparece_apenas_em_detalhe_pendente(self) -> None:
+        operacao_pronta = self.client.get(
+            "/operacoes/OP-001"
+        ).get_data(as_text=True)
+        operacao_pendente = self.client.get(
+            "/operacoes/OP-002"
+        ).get_data(as_text=True)
+
+        self.assertNotIn("Simular atualização externa", operacao_pronta)
+        self.assertIn("Simular atualização externa", operacao_pendente)
+
+    def test_atualizacao_externa_no_assistente_libera_horarios(self) -> None:
+        resposta = self.client.post(
+            "/operacoes/OP-002/simular-atualizacao-externa",
+            data={"origem": "assistente"},
+            follow_redirects=True,
+        )
+        conteudo = resposta.get_data(as_text=True)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("A busca de horários já foi liberada", conteudo)
+        self.assertIn("Horários compatíveis", conteudo)
+        self.assertNotIn("Pendências impeditivas", conteudo)
 
     def test_abre_detalhes_da_operacao(self) -> None:
         resposta = self.client.get("/operacoes/OP-001")
@@ -116,6 +179,7 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertEqual(resposta.status_code, 400)
 
     def test_confirma_agendamento_e_exibe_resultado(self) -> None:
+        self.client.post("/operacoes/simular-recebimento")
         resposta = self.client.post(
             "/operacoes/OP-001/confirmar",
             data={
@@ -174,6 +238,8 @@ class PaginaInicialTestCase(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertIn("Demonstração restaurada", conteudo)
         self.assertNotIn("Ver agendamento", conteudo)
+        self.assertNotIn("OP-001", conteudo)
+        self.assertIn("Simular recebimento das operações", conteudo)
 
         assistente = self.client.get(
             "/operacoes/OP-001/assistente"

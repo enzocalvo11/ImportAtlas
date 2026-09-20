@@ -509,6 +509,37 @@ a:focus-visible {
   margin: 0.5rem 0 0;
 }
 
+.painel-recebimento {
+  width: min(100%, 720px);
+  margin-inline: auto;
+  padding: clamp(2rem, 6vw, 4rem);
+  text-align: center;
+}
+
+.icone-recebimento {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 1.25rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #087e8b;
+  background: #dcf2f3;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.painel-recebimento p:not(.identificacao) {
+  max-width: 520px;
+  margin: 0.75rem auto 1.5rem;
+  color: #607687;
+  line-height: 1.6;
+}
+
+.painel-recebimento form {
+  margin: 0;
+}
+
 .estado-vazio-compacto {
   margin-top: 1rem;
   padding: 1.5rem;
@@ -873,6 +904,33 @@ a:focus-visible {
   margin: 0;
 }
 
+.barra-atualizacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e8eef2;
+}
+
+.barra-atualizacao p,
+.barra-atualizacao form {
+  margin: 0;
+}
+
+.barra-atualizacao p {
+  color: #607687;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.barra-atualizacao.painel {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #dce5ea;
+}
+
 .botao:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -1017,9 +1075,14 @@ a:focus-visible {
 
   .acoes-cartao,
   .barra-acoes,
-  .barra-confirmacao {
+  .barra-confirmacao,
+  .barra-atualizacao {
     align-items: stretch;
     flex-direction: column-reverse;
+  }
+
+  .barra-atualizacao form {
+    width: 100%;
   }
 
   .botao {

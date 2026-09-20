@@ -113,6 +113,21 @@ def carregar_agendamentos(
     return registros
 
 
+def salvar_operacoes(
+    operacoes: list[dict[str, Any]],
+    diretorio_dados: Path = DIRETORIO_DADOS,
+) -> None:
+    """Valida e salva somente as operações simuladas."""
+    _validar_registros(
+        operacoes,
+        ESQUEMA_OPERACAO,
+        ("chegada_prevista",),
+        "operacoes.json",
+    )
+    _validar_responsaveis(operacoes)
+    _salvar_colecao(diretorio_dados / "operacoes.json", operacoes)
+
+
 def salvar_estado_agendamento(
     operacoes: list[dict[str, Any]],
     janelas_terminal: list[dict[str, Any]],

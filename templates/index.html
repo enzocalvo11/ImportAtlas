@@ -19,87 +19,117 @@
   {% if demonstracao_restaurada %}
     <div class="aviso aviso-sucesso aviso-painel" role="status">
       <strong>Demonstração restaurada.</strong>
-      <p>Os três cenários voltaram ao estado inicial.</p>
+      <p>Os três cenários voltaram ao estado inicial. Simule um novo recebimento para exibi-los.</p>
     </div>
   {% endif %}
 
-  <section class="indicadores" aria-label="Resumo das operações">
-    <article class="indicador">
-      <span>Total de operações</span>
-      <strong>{{ indicadores.total }}</strong>
-    </article>
-    <article class="indicador indicador-alerta">
-      <span>Prontas para agendamento</span>
-      <strong>{{ indicadores.prontas }}</strong>
-    </article>
-    <article class="indicador indicador-erro">
-      <span>Com pendências</span>
-      <strong>{{ indicadores.pendencias }}</strong>
-    </article>
-    <article class="indicador indicador-informativo">
-      <span>Agendamentos confirmados</span>
-      <strong>{{ indicadores.confirmadas }}</strong>
-    </article>
-  </section>
-
-  <section aria-labelledby="titulo-operacoes">
-    <div class="titulo-secao">
-      <div>
-        <p class="identificacao">Cargas acompanhadas</p>
-        <h2 id="titulo-operacoes">Operações</h2>
-      </div>
-      <span class="quantidade">{{ operacoes|length }} registros</span>
-    </div>
-
-    {% if operacoes %}
-      <div class="grade-operacoes">
-        {% for operacao in operacoes %}
-          <article class="cartao-operacao">
-            <div class="cartao-topo">
-              <span class="codigo-operacao">{{ operacao.id }}</span>
-              <span class="status {{ operacao.status|classe_status }}">
-                {{ operacao.status }}
-              </span>
-            </div>
-            <div class="cartao-corpo">
-              <h3>{{ operacao.importador }}</h3>
-              <dl class="dados-resumidos">
-                <div>
-                  <dt>Carga</dt>
-                  <dd>{{ operacao.container }}</dd>
-                </div>
-                <div>
-                  <dt>Terminal</dt>
-                  <dd>{{ operacao.terminal }}</dd>
-                </div>
-                <div>
-                  <dt>Chegada prevista</dt>
-                  <dd>{{ operacao.chegada_prevista|data_br }}</dd>
-                </div>
-              </dl>
-            </div>
-            <div class="acoes-cartao">
-              <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">
-                Ver detalhes
-              </a>
-              {% if agendamentos_por_operacao.get(operacao.id) %}
-                <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamentos_por_operacao[operacao.id].id) }}">
-                  Ver agendamento
-                </a>
-              {% else %}
-                <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">
-                  Verificar e agendar
-                </a>
-              {% endif %}
-            </div>
-          </article>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="estado-vazio">
-        <h3>Nenhuma operação encontrada</h3>
-        <p>As operações aparecerão aqui quando os dados estiverem disponíveis.</p>
+  {% if operacoes_recebidas %}
+    {% if recebimento_simulado %}
+      <div class="aviso aviso-sucesso aviso-painel" role="status">
+        <strong>Recebimento simulado com sucesso.</strong>
+        <p>As operações recebidas já estão disponíveis para acompanhamento.</p>
       </div>
     {% endif %}
-  </section>
+
+    {% if atualizacao_simulada %}
+      <div class="aviso aviso-sucesso aviso-painel" role="status">
+        <strong>Atualização externa simulada com sucesso.</strong>
+        <p>A operação {{ operacao_atualizada }} está pronta para agendamento.</p>
+      </div>
+    {% endif %}
+
+    <section class="indicadores" aria-label="Resumo das operações">
+      <article class="indicador">
+        <span>Total de operações</span>
+        <strong>{{ indicadores.total }}</strong>
+      </article>
+      <article class="indicador indicador-alerta">
+        <span>Prontas para agendamento</span>
+        <strong>{{ indicadores.prontas }}</strong>
+      </article>
+      <article class="indicador indicador-erro">
+        <span>Com pendências</span>
+        <strong>{{ indicadores.pendencias }}</strong>
+      </article>
+      <article class="indicador indicador-informativo">
+        <span>Agendamentos confirmados</span>
+        <strong>{{ indicadores.confirmadas }}</strong>
+      </article>
+    </section>
+
+    <section aria-labelledby="titulo-operacoes">
+      <div class="titulo-secao">
+        <div>
+          <p class="identificacao">Cargas acompanhadas</p>
+          <h2 id="titulo-operacoes">Operações</h2>
+        </div>
+        <span class="quantidade">{{ operacoes|length }} registros</span>
+      </div>
+
+      {% if operacoes %}
+        <div class="grade-operacoes">
+          {% for operacao in operacoes %}
+            <article class="cartao-operacao">
+              <div class="cartao-topo">
+                <span class="codigo-operacao">{{ operacao.id }}</span>
+                <span class="status {{ operacao.status|classe_status }}">
+                  {{ operacao.status }}
+                </span>
+              </div>
+              <div class="cartao-corpo">
+                <h3>{{ operacao.importador }}</h3>
+                <dl class="dados-resumidos">
+                  <div>
+                    <dt>Carga</dt>
+                    <dd>{{ operacao.container }}</dd>
+                  </div>
+                  <div>
+                    <dt>Terminal</dt>
+                    <dd>{{ operacao.terminal }}</dd>
+                  </div>
+                  <div>
+                    <dt>Chegada prevista</dt>
+                    <dd>{{ operacao.chegada_prevista|data_br }}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="acoes-cartao">
+                <a class="botao botao-secundario" href="{{ url_for('detalhes_operacao', operacao_id=operacao.id) }}">
+                  Ver detalhes
+                </a>
+                {% if agendamentos_por_operacao.get(operacao.id) %}
+                  <a class="botao botao-primario" href="{{ url_for('exibir_agendamento_confirmado', agendamento_id=agendamentos_por_operacao[operacao.id].id) }}">
+                    Ver agendamento
+                  </a>
+                {% else %}
+                  <a class="botao botao-primario" href="{{ url_for('iniciar_assistente', operacao_id=operacao.id) }}">
+                    Verificar e agendar
+                  </a>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="estado-vazio">
+          <h3>Nenhuma operação encontrada</h3>
+          <p>Não há operações disponíveis nos dados simulados.</p>
+        </div>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="painel painel-recebimento" aria-labelledby="titulo-recebimento">
+      <span class="icone-recebimento" aria-hidden="true">↓</span>
+      <p class="identificacao">Entrada de dados simulada</p>
+      <h2 id="titulo-recebimento">Nenhuma operação recebida</h2>
+      <p>
+        Simule o recebimento das operações para carregar as cargas e seus status atuais no painel.
+      </p>
+      <form method="post" action="{{ url_for('simular_recebimento_operacoes') }}">
+        <button class="botao botao-primario" type="submit">
+          Simular recebimento das operações
+        </button>
+      </form>
+    </section>
+  {% endif %}
 {% endblock %}

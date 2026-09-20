@@ -55,6 +55,11 @@ REGRAS_PRONTIDAO = (
     ),
 )
 
+VALORES_ESPERADOS_PRONTIDAO = {
+    campo: valor_esperado
+    for campo, valor_esperado, *_ in REGRAS_PRONTIDAO
+}
+
 
 def verificar_prontidao(operacao: dict[str, Any]) -> dict[str, Any]:
     """Avalia as condições obrigatórias sem alterar a operação recebida."""

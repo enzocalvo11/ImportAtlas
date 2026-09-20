@@ -22,6 +22,13 @@
     <span class="status {{ resultado.status|classe_status }}">{{ resultado.status }}</span>
   </section>
 
+  {% if atualizacao_simulada %}
+    <div class="aviso aviso-sucesso aviso-painel" role="status">
+      <strong>Atualização externa simulada com sucesso.</strong>
+      <p>As pendências foram concluídas. A busca de horários já foi liberada.</p>
+    </div>
+  {% endif %}
+
   <section class="painel secao-assistente" aria-labelledby="titulo-prontidao">
     <div class="titulo-painel">
       <div>
@@ -69,6 +76,15 @@
             </dl>
           </article>
         {% endfor %}
+      </div>
+      <div class="barra-atualizacao painel">
+        <p>Simule a chegada da confirmação pelo sistema externo responsável.</p>
+        <form method="post" action="{{ url_for('atualizar_operacao_externamente', operacao_id=operacao.id) }}">
+          <input type="hidden" name="origem" value="assistente">
+          <button class="botao botao-primario" type="submit">
+            Simular atualização externa
+          </button>
+        </form>
       </div>
     </section>
   {% elif resultado.status == "Agendamento confirmado" %}

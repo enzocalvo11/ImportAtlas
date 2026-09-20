@@ -18,6 +18,13 @@
     <span class="status {{ operacao.status|classe_status }}">{{ operacao.status }}</span>
   </section>
 
+  {% if atualizacao_simulada %}
+    <div class="aviso aviso-sucesso aviso-painel" role="status">
+      <strong>Atualização externa simulada com sucesso.</strong>
+      <p>As pendências foram concluídas e a operação está pronta para agendamento.</p>
+    </div>
+  {% endif %}
+
   <div class="fluxo-detalhes">
     <section class="painel secao-assistente" aria-labelledby="titulo-dados-carga">
       <div class="titulo-painel">
@@ -72,6 +79,17 @@
           </li>
         {% endfor %}
       </ul>
+      {% if prontidao.pendencias %}
+        <div class="barra-atualizacao">
+          <p>Simule a chegada da confirmação pelo sistema externo responsável.</p>
+          <form method="post" action="{{ url_for('atualizar_operacao_externamente', operacao_id=operacao.id) }}">
+            <input type="hidden" name="origem" value="detalhes">
+            <button class="botao botao-primario" type="submit">
+              Simular atualização externa
+            </button>
+          </form>
+        </div>
+      {% endif %}
     </section>
 
     <section class="painel secao-assistente" aria-labelledby="titulo-responsaveis">

@@ -1,10 +1,16 @@
+import os
+import secrets
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, abort, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 
 from services.agendamento_service import buscar_horarios_compativeis
+from services.atualizacao_externa_service import (
+    ErroAtualizacaoExterna,
+    simular_atualizacao_externa,
+)
 from services.confirmacao_service import ErroConfirmacao, confirmar_agendamento
 from services.data_service import (
     DIRETORIO_DADOS,
@@ -37,6 +43,9 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
     app.config.from_mapping(
         DIRETORIO_DADOS=DIRETORIO_DADOS,
         DIRETORIO_BASE_DEMO=DIRETORIO_BASE_DEMO,
+        SECRET_KEY=(
+            os.environ.get("IMPORTATLAS_SECRET_KEY") or secrets.token_hex(32)
+        ),
     )
     if configuracao:
         app.config.update(configuracao)
@@ -46,12 +55,19 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/")
     def painel_operacoes() -> str:
+        operacoes_recebidas = bool(session.get("operacoes_recebidas"))
         diretorio_dados = _diretorio_dados(app)
-        operacoes = carregar_operacoes(diretorio_dados)
-        agendamentos_por_operacao = {
-            agendamento["operacao_id"]: agendamento
-            for agendamento in carregar_agendamentos(diretorio_dados)
-        }
+        operacoes = (
+            carregar_operacoes(diretorio_dados) if operacoes_recebidas else []
+        )
+        agendamentos_por_operacao = (
+            {
+                agendamento["operacao_id"]: agendamento
+                for agendamento in carregar_agendamentos(diretorio_dados)
+            }
+            if operacoes_recebidas
+            else {}
+        )
         indicadores = {
             "total": len(operacoes),
             "prontas": _contar_status(operacoes, "Pronta para agendamento"),
@@ -63,9 +79,25 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             operacoes=operacoes,
             indicadores=indicadores,
             agendamentos_por_operacao=agendamentos_por_operacao,
+            operacoes_recebidas=operacoes_recebidas,
+            recebimento_simulado=(
+                request.args.get("recebimento") == "simulado"
+            ),
+            atualizacao_simulada=(
+                request.args.get("atualizacao") == "simulada"
+            ),
+            operacao_atualizada=request.args.get("operacao", ""),
             demonstracao_restaurada=(
                 request.args.get("demonstracao") == "restaurada"
             ),
+        )
+
+    @app.post("/operacoes/simular-recebimento")
+    def simular_recebimento_operacoes() -> Any:
+        session["operacoes_recebidas"] = True
+        return redirect(
+            url_for("painel_operacoes", recebimento="simulado"),
+            code=303,
         )
 
     @app.get("/operacoes/<operacao_id>")
@@ -85,6 +117,9 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             operacao=operacao,
             agendamento=agendamento,
             prontidao=verificar_prontidao(operacao),
+            atualizacao_simulada=(
+                request.args.get("atualizacao") == "simulada"
+            ),
         )
 
     @app.get("/operacoes/<operacao_id>/assistente")
@@ -109,7 +144,43 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             opcoes=opcoes,
             opcao_selecionada=opcao_selecionada,
             participantes=participantes,
+            atualizacao_simulada=(
+                request.args.get("atualizacao") == "simulada"
+            ),
         )
+
+    @app.post("/operacoes/<operacao_id>/simular-atualizacao-externa")
+    def atualizar_operacao_externamente(operacao_id: str) -> Any:
+        try:
+            simular_atualizacao_externa(
+                operacao_id,
+                _diretorio_dados(app),
+            )
+        except ErroAtualizacaoExterna as erro:
+            abort(409, description=str(erro))
+
+        origem = request.form.get("origem", "painel")
+        if origem == "detalhes":
+            destino = url_for(
+                "detalhes_operacao",
+                operacao_id=operacao_id,
+                atualizacao="simulada",
+            )
+        elif origem == "assistente":
+            destino = url_for(
+                "iniciar_assistente",
+                operacao_id=operacao_id,
+                atualizacao="simulada",
+            )
+        else:
+            session["operacoes_recebidas"] = True
+            destino = url_for(
+                "painel_operacoes",
+                atualizacao="simulada",
+                operacao=operacao_id,
+            )
+
+        return redirect(destino, code=303)
 
     @app.post("/operacoes/<operacao_id>/confirmar")
     def confirmar_retirada(operacao_id: str) -> Any:
@@ -176,6 +247,7 @@ def create_app(configuracao: dict[str, Any] | None = None) -> Flask:
             _diretorio_dados(app),
             Path(app.config["DIRETORIO_BASE_DEMO"]),
         )
+        session.pop("operacoes_recebidas", None)
         return redirect(
             url_for("painel_operacoes", demonstracao="restaurada"),
             code=303,
